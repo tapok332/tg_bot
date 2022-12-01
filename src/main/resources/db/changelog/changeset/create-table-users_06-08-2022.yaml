@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 06-08-2022_table-users
+      author: tapok332
+      changes:
+        - createTable:
+            tableName: users_info
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: surname
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: patronymic
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: age
+                  type: bigint
+                  constraints:
+                    nullable: true
+              - column:
+                  name: address_id
+                  type: bigint
+                  constraints:
+                    nullable: true

@@ -1,0 +1,66 @@
+#  Country
+#    - Region
+#    - City
+#    - Street
+#    - Post_code
+#    - Phone_number
+databaseChangeLog:
+  - changeSet:
+      id: 06-08-2022
+      author: tapok332
+      changes:
+        - createTable:
+            tableName: delivery_info
+            columns:
+              - column:
+                    name: id
+                    type: bigint(255)
+                    autoIncrement: true
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+              - column:
+                  name: country
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: region
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: post_code
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: delivery_company
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: postal_office
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: mail
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
