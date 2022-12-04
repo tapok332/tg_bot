@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-12-2022_keyboard_table
+      author: tapok332
+      changes:
+        - createTable:
+            tableName: keyboard_items_info
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: item_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity_in_stock
+                  type: bigint
+                  constraints:
+                    nullable: false

@@ -15,7 +15,12 @@ public enum TextsForMessage {
             /check_info_about_me - It's command for you can see information which you get to the bot
             /help - Info about commands
             """),
-
+CHOOSE_LANGUAGE("""
+        Please choose the language:
+        English or Ukrainian
+        
+        Будь-ласка виберіть мову:
+        Англійська або Українська"""),
     INFO("""
             What you want to do?
             
@@ -23,6 +28,11 @@ public enum TextsForMessage {
             1. Set your information
             2. Update your information
             3. Check your information"""),
+    WITHOUT_INFO("""
+            You don't have information about you and address delivery!
+            Please set your information for continue."""),
+    ORDERS_INFO("""
+            OrderHandler TODO"""),
 
     SET_OR_UPDATE_USER_INFO("""
             Now you are need send your info:
@@ -50,10 +60,11 @@ public enum TextsForMessage {
 
     ERROR_USER_INFO("Sorry, but you already register in this bot. Now you can update your info."),
     ERROR_UPDATE_USER_INFO("Sorry, but you don't have any information for update."),
-    ERROR_USER_CHECK_INFO("You don't have information about you."),
     ERROR_DELIVERY_CHECK_INFO("You don't have information about your delivery address."),
     INCORRECT_COMMAND("Sorry, but we it incorrect command."),
     INCORRECT_AGE("You didn't write a number."),
+    NO_IN_STOCK("This item is absent in the stock."),
+    DELETED_INFO("All your information has been deleted!"),
     UNKNOWN_ERROR("Unknown error!");
 
     private final String text;

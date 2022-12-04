@@ -1,4 +1,4 @@
 package com.example.tg_bot.service.services;
 
-public class OrdersService {
+public class OrderService {
 }

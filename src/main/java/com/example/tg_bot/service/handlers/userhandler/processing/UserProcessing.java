@@ -1,18 +1,17 @@
 package com.example.tg_bot.service.handlers.userhandler.processing;
 
-import com.example.tg_bot.entities.dto.UserDto;
 import com.example.tg_bot.entities.User;
+import com.example.tg_bot.entities.dto.UserDto;
 import com.example.tg_bot.repo.UserRepository;
 import com.example.tg_bot.service.handlers.InfoHandler;
+import com.example.tg_bot.service.handlers.languagehandler.LanguageHandler;
 import com.example.tg_bot.utils.cache.UserData;
-import lombok.AllArgsConstructor;
+import com.example.tg_bot.utils.commands.Commands;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import static com.example.tg_bot.utils.text.en.TextsForMessage.ERROR_USER_CHECK_INFO;
 import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
 
 @Service
@@ -21,6 +20,7 @@ public class UserProcessing implements InfoHandler {
     private final UserData userData;
     private final UserRepository userRepository;
     private final UserDto userDto;
+    private final LanguageHandler languageHandler;
 
     @Override
     public SendMessage saveInfo(Message message) {
@@ -33,28 +33,29 @@ public class UserProcessing implements InfoHandler {
         if (usersInfoState.getName() == null) {
             userDto.setName(message.getText());
             userData.saveUsersInfoState(userId, userDto);
-            return sendMessage("Send your surname: ", chatId);
+            return sendMessage(languageHandler.getText(userId, "send_surname"), chatId);
         }
         if (usersInfoState.getSurname() == null) {
             usersInfoState.setSurname(message.getText());
             userData.saveUsersInfoState(userId, userDto);
-            return sendMessage("Send your patronymic: ", chatId);
+            return sendMessage(languageHandler.getText(userId, "send_patronymic"), chatId);
         }
         if (usersInfoState.getPatronymic() == null) {
             usersInfoState.setPatronymic(message.getText());
             userData.saveUsersInfoState(userId, userDto);
-            return sendMessage("Send your age: ", chatId);
+            return sendMessage(languageHandler.getText(userId, "send_age"), chatId);
         }
         if (usersInfoState.getAge() == null) {
             try{
                 usersInfoState.setAge(Integer.parseInt(message.getText()));
             }catch (NumberFormatException ex){
-                return sendMessage("Please send numbers.", chatId);
+                return sendMessage(languageHandler.getText(userId, "error_age"), chatId);
             }
             userData.saveUsersInfoState(userId, userDto);
+            userData.saveUsersCurrentBotState(userId, Commands.INFO);
             buildUserAndSave(message.getFrom().getId());
         }
-        return sendMessage("Thanks for information about you.", chatId);
+        return sendMessage(languageHandler.getText(userId, "thanks_message"), chatId);
     }
 
     @Override
@@ -67,35 +68,37 @@ public class UserProcessing implements InfoHandler {
         if (usersInfoState.getName() == null) {
             userDto.setName(message.getText());
             userData.saveUsersInfoState(userId, userDto);
-            return sendMessage("Send your new surname: ", chatId);
+            return sendMessage(languageHandler.getText(userId, "send_surname"), chatId);
         }
         if (usersInfoState.getSurname() == null) {
             usersInfoState.setSurname(message.getText());
             userData.saveUsersInfoState(userId, userDto);
-            return sendMessage("Send your new patronymic: ", chatId);
+            return sendMessage(languageHandler.getText(userId, "send_patronymic"), chatId);
         }
         if (usersInfoState.getPatronymic() == null) {
             usersInfoState.setPatronymic(message.getText());
             userData.saveUsersInfoState(userId, userDto);
-            return sendMessage("Send your new age: ", chatId);
+            return sendMessage(languageHandler.getText(userId, "send_age"), chatId);
         }
         if (usersInfoState.getAge() == null) {
             try{
                 usersInfoState.setAge(Integer.parseInt(message.getText()));
             }catch (NumberFormatException ex){
-                return sendMessage("Please send numbers.", chatId);
+                return sendMessage(languageHandler.getText(userId, "error_age"), chatId);
             }
             userData.saveUsersInfoState(userId, userDto);
+            userData.saveUsersCurrentBotState(userId, Commands.INFO);
             buildUserAndUpdate(message.getFrom().getId());
         }
-        return sendMessage("Thanks for information about you.", chatId);
+        return sendMessage(languageHandler.getText(userId, "thanks_message"), chatId);
     }
 
     @Override
     public String checkInfo(Long userId) {
+        userData.saveUsersCurrentBotState(userId, Commands.INFO);
         return userRepository.findByUserId(userId).isPresent()
                 ? userRepository.findByUserId(userId).get().toString()
-                : ERROR_USER_CHECK_INFO.getText();
+                : languageHandler.getText(userId, "error_user_check_info");
     }
 
     private void buildUserAndSave(Long userId) {

@@ -35,11 +35,15 @@ public class Sending {
                 .build();
     }
 
-    public static SendMessage sendPages(EditMessageText text, Long chatId, ReplyKeyboardMarkup keyboard) {
-        return SendMessage.builder()
+    public static EditMessageText sendPages(Long chatId,
+                                            Integer messageId, String text, List<List<InlineKeyboardButton>> buttons) {
+        return EditMessageText.builder()
+                .replyMarkup(InlineKeyboardMarkup.builder()
+                        .keyboard(buttons)
+                        .build())
                 .text(text)
+                .messageId(messageId)
                 .chatId(chatId)
-                .replyMarkup(keyboard)
                 .build();
     }
 }

@@ -3,3 +3,7 @@ databaseChangeLog:
       file: db/changelog/changeset/create-table_06-08-2022.yaml
   - include:
       file: db/changelog/changeset/create-table-users_06-08-2022.yaml
+  - include:
+      file: db/changelog/changeset/create-table-laptops_02-12-2022.yaml
+  - include:
+      file: db/changelog/changeset/create-table-keyboards_02-12-2022.yaml

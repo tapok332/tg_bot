@@ -5,18 +5,18 @@ import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.service.handlers.deliveryhandler.processing.DeliveryProcessing;
 import com.example.tg_bot.service.handlers.userhandler.processing.UserProcessing;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.jvnet.hk2.annotations.Service;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
 import static com.example.tg_bot.utils.text.en.TextsForMessage.*;
 
-@Component
 @Service
-@AllArgsConstructor
+@Component
+@RequiredArgsConstructor
 public class MenuService implements DefaultService {
 
     private final UserData userData;
@@ -36,7 +36,7 @@ public class MenuService implements DefaultService {
         Long chatId = message.getChatId();
         Commands botState = userData.getUsersCurrentBotState(message.getFrom().getId());
         switch (botState) {
-            case CHECK_INFO -> {
+            case CHECK_USER_INFO -> {
                 return getAllInfo(userId, chatId);
             }
             case HELP -> {

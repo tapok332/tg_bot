@@ -5,8 +5,11 @@ import com.example.tg_bot.service.services.BotService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.io.Serializable;
 
 @Slf4j
 public class Bot extends TelegramLongPollingBot {
@@ -31,14 +34,8 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     @Override
-    public void onUpdateReceived(Update update) {
-        SendMessage handledMessage = botService.handleUpdate(update);
-        sendMessageToChat(handledMessage);
-    }
-
     @SneakyThrows
-    public void sendMessageToChat(SendMessage message) {
-        new TelegramLongPollingBot().executeAsync()
-        execute(message);
+    public void onUpdateReceived(Update update) {
+        execute(botService.handleUpdate(update));
     }
 }

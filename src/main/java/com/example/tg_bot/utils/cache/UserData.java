@@ -3,10 +3,12 @@ package com.example.tg_bot.utils.cache;
 import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.entities.dto.DeliveryDto;
 import com.example.tg_bot.entities.dto.UserDto;
+import com.example.tg_bot.utils.text.Language;
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -15,6 +17,7 @@ public class UserData implements DataCache {
     private final Map<Long, Commands> usersBotStates = new HashMap<>();
     private final Map<Long, UserDto> userInfoState = new HashMap<>();
     private final Map<Long, DeliveryDto> userDeliveryInfoState = new HashMap<>();
+    private final Map<Long, Locale> userLanguage = new HashMap<>();
 
     @Override
     public void saveUsersCurrentBotState(Long userId, Commands botState) {
@@ -47,5 +50,15 @@ public class UserData implements DataCache {
     @Override
     public DeliveryDto getUsersDeliveryInfoState(Long userId) {
         return userDeliveryInfoState.get(userId);
+    }
+
+    @Override
+    public void saveUsersLanguage(Long userId, Locale language) {
+        userLanguage.put(userId, language);
+    }
+
+    @Override
+    public Locale getUsersLanguage(Long userId) {
+        return userLanguage.get(userId);
     }
 }

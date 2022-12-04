@@ -6,14 +6,15 @@ import com.example.tg_bot.repo.DeliveryRepository;
 import com.example.tg_bot.repo.UserRepository;
 import com.example.tg_bot.service.handlers.InfoHandler;
 import com.example.tg_bot.utils.cache.UserData;
-import lombok.AllArgsConstructor;
+import com.example.tg_bot.utils.commands.Commands;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import static com.example.tg_bot.utils.text.en.TextsForMessage.ERROR_DELIVERY_CHECK_INFO;
+import javax.transaction.Transactional;
+
+import static com.example.tg_bot.utils.text.en.TextsForMessage.*;
 import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
 
 @Service
@@ -76,6 +77,8 @@ public class DeliveryProcessing implements InfoHandler {
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
             buildDeliveryAndSave(userId);
         }
+        userData.saveUsersCurrentBotState(userId, Commands.INFO);
+
         return sendMessage("Thanks for your delivery information.", chatId);
     }
 
@@ -129,6 +132,8 @@ public class DeliveryProcessing implements InfoHandler {
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
             buildDeliveryAndUpdate(userId);
         }
+        userData.saveUsersCurrentBotState(userId, Commands.INFO);
+
         return sendMessage("Thanks for your delivery information.", chatId);
     }
 
@@ -140,6 +145,8 @@ public class DeliveryProcessing implements InfoHandler {
                 return deliveryRepository.findById(addressId).get().toString();
             }
         }
+        userData.saveUsersCurrentBotState(userId, Commands.INFO);
+
         return ERROR_DELIVERY_CHECK_INFO.getText();
     }
 
@@ -183,5 +190,19 @@ public class DeliveryProcessing implements InfoHandler {
                 userRepository.save(userToUpdate);
             });
         }
+    }
+
+    @Transactional
+    public SendMessage deleteAllInfo(Long userId, Long chatId) {
+        if(userRepository.findByUserId(userId).isEmpty() || userRepository.findByUserId(userId).get().getAddress() == null){
+            return sendMessage(WITHOUT_INFO.getText(), chatId);
+        }
+        Long addressId = userRepository.findByUserId(userId).get().getAddress().getId();
+
+        deliveryRepository.deleteById(addressId);
+        userRepository.deleteByUserId(userId);
+        userData.saveUsersCurrentBotState(userId, Commands.INFO);
+
+        return sendMessage(DELETED_INFO.getText(), chatId);
     }
 }

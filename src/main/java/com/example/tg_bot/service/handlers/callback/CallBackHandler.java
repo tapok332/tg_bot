@@ -5,12 +5,17 @@ import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.validation.UserValidate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+
+import java.io.Serializable;
 
 import static com.example.tg_bot.utils.text.en.TextsForMessage.*;
 import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
 
+@Component
 @RequiredArgsConstructor
 public class CallBackHandler {
 
@@ -18,10 +23,10 @@ public class CallBackHandler {
     private final UserData userData;
     private final OrderPagesHandler orderPagesHandler;
 
-    public SendMessage handleCallBack(CallbackQuery callbackQuery) {
+    public BotApiMethod<? extends Serializable> handleCallBack(CallbackQuery callbackQuery) {
         Long userId = callbackQuery.getFrom().getId();
         Long chatId = callbackQuery.getMessage().getChatId();
-        SendMessage replyMessage;
+        BotApiMethod<? extends Serializable> replyMessage = sendMessage("Unknown request.", chatId);
         String callbackQueryData = callbackQuery.getData();
 
         if (callbackQueryData.contains("page")) {
@@ -32,9 +37,8 @@ public class CallBackHandler {
             case "set_address" -> replyMessage = setUserAddress(userId, chatId);
             case "update_user" -> replyMessage = updateUserInfo(userId, chatId);
             case "update_address" -> replyMessage = updateUserAddress(userId, chatId);
-            case "hair" -> replyMessage = getHairCosmeticsItems(userId, callbackQuery);
-            case "face" -> replyMessage = getFaceCosmeticsItems(userId, chatId);
-            default -> replyMessage = sendMessage("Unknown request.", chatId);
+            case "laptops" -> replyMessage = getLaptopItems(userId, callbackQuery);
+            case "keyboards" -> replyMessage = getKeyboardsItems(userId, callbackQuery);
         }
 
         return replyMessage;
@@ -82,11 +86,13 @@ public class CallBackHandler {
         return sendMessage("Error processing your choose.", chatId);
     }
 
-    private SendMessage getHairCosmeticsItems(Long userId, CallbackQuery callbackQuery) {
-        userData.saveUsersCurrentBotState(userId, Commands.HAIR_ORDERS);
+    private BotApiMethod<? extends Serializable> getLaptopItems(Long userId, CallbackQuery callbackQuery) {
+        userData.saveUsersCurrentBotState(userId, Commands.LAPTOP_ORDERS);
         return orderPagesHandler.handlePages(callbackQuery);
     }
 
-    private SendMessage getFaceCosmeticsItems(Long userId, Long chatId) {
+    private BotApiMethod<? extends Serializable> getKeyboardsItems(Long userId, CallbackQuery callbackQuery) {
+        userData.saveUsersCurrentBotState(userId, Commands.KEYBOARD_ORDERS);
+        return orderPagesHandler.handlePages(callbackQuery);
     }
 }

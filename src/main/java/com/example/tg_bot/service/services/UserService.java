@@ -6,6 +6,7 @@ import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.utils.utilforsendmessage.Sending;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -21,11 +22,11 @@ import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
 
 @Service
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService implements DefaultService {
 
-    private UserData userData;
-    private UserProcessing userProcessing;
+    private final UserData userData;
+    private final UserProcessing userProcessing;
 
     @Override
     public SendMessage handle(Message message) {
@@ -65,11 +66,8 @@ public class UserService implements DefaultService {
                 .text("Update my info")
                 .callbackData("update_user")
                 .build();
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> keyboard = List.of(setInfoButton, updateInfoButton);
 
-        buttons.add(keyboard);
-
-        return buttons;
+        return List.of(keyboard);
     }
 }

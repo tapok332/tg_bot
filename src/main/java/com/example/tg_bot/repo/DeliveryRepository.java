@@ -1,6 +1,8 @@
 package com.example.tg_bot.repo;
 
 import com.example.tg_bot.entities.Delivery;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

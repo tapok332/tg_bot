@@ -1,9 +1,10 @@
 package com.example.tg_bot.service.handlers.informationhandler;
 
-import com.example.tg_bot.service.InfoState;
+import com.example.tg_bot.service.handlers.commandshandler.CommandsHandler;
+import com.example.tg_bot.service.handlers.languagehandler.LanguageHandler;
+import com.example.tg_bot.service.states.InfoState;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -15,38 +16,32 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.tg_bot.utils.text.en.TextsForMessage.INFO;
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessageWithKeyboard;
-
+@Component
 @RequiredArgsConstructor
 public class InfoHandler {
 
     private final InfoState infoState;
     private final UserData userData;
+    private final LanguageHandler languageHandler;
+    private final CommandsHandler commandsHandler;
 
     public SendMessage handleInfo(Message message) {
         String inputMessage = message.getText();
         Long userId = message
                 .getFrom()
                 .getId();
-        Commands commandNow;
-
-        switch (inputMessage) {
-            case "My information" -> {
-                return sendMessageWithKeyboard(INFO.getText(), message.getChatId(), getInfoKeyboard());
-            }
-            case "User information" -> commandNow = Commands.USER_INFO;
-            case "Delivery information" -> commandNow = Commands.DELIVERY_INFO;
-            case "Check all information" -> commandNow = Commands.CHECK_INFO;
-            case "Menu" -> commandNow = Commands.MENU;
-            default -> commandNow = userData.getUsersCurrentBotState(userId);
+        if (inputMessage.equals(languageHandler.getText(userId, "my_info"))
+                || inputMessage.equals("error_info_handle")
+        || inputMessage.equals("/start")) {
+            return commandsHandler.info(message, getInfoKeyboard(userId));
         }
+        Commands commandNow = commandsHandler.info(message);
         userData.saveUsersCurrentBotState(userId, commandNow);
 
         return infoState.processInputMessage(commandNow, message);
     }
 
-    private ReplyKeyboardMarkup getInfoKeyboard() {
+    private ReplyKeyboardMarkup getInfoKeyboard(Long userId) {
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
         replyKeyboardMarkup.setSelective(true);
@@ -55,14 +50,15 @@ public class InfoHandler {
 
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow firstRow = new KeyboardRow();
-        firstRow.add(new KeyboardButton("User information"));
-        firstRow.add(new KeyboardButton("Delivery information"));
+        firstRow.add(new KeyboardButton(languageHandler.getText(userId, "user_info")));
+        firstRow.add(new KeyboardButton(languageHandler.getText(userId, "user_delivery_info")));
         KeyboardRow secondRow = new KeyboardRow();
-        secondRow.add(new KeyboardButton("Check all information"));
+        secondRow.add(new KeyboardButton(languageHandler.getText(userId, "check_info")));
+        secondRow.add(new KeyboardButton(languageHandler.getText(userId, "delete_info")));
         KeyboardRow thirdRow = new KeyboardRow();
-        thirdRow.add(new KeyboardButton("Menu"));
+        thirdRow.add(new KeyboardButton(languageHandler.getText(userId, "menu")));
         KeyboardRow fourthRow = new KeyboardRow();
-        fourthRow.add(new KeyboardButton("Help"));
+        fourthRow.add(new KeyboardButton(languageHandler.getText(userId, "help")));
         keyboard.add(firstRow);
         keyboard.add(secondRow);
         keyboard.add(thirdRow);
