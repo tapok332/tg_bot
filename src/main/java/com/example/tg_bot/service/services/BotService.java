@@ -1,8 +1,8 @@
 package com.example.tg_bot.service.services;
 
-import com.example.tg_bot.service.handlers.callback.CallBackHandler;
+import com.example.tg_bot.service.handlers.callbackhandler.CallBackHandler;
 import com.example.tg_bot.service.handlers.messagehandler.MessageHandler;
-import lombok.AllArgsConstructor;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jvnet.hk2.annotations.Service;
@@ -22,19 +22,30 @@ import java.io.Serializable;
 public class BotService {
     private final CallBackHandler callBackHandler;
     private final MessageHandler messageHandler;
+    private final TextSender textSender;
 
     public BotApiMethod<? extends Serializable> handleUpdate(Update update) {
-
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            return handleMessage(update.getMessage());
+        try {
+            if (update.hasMessage() && update.getMessage().hasText()) {
+                return handleMessage(update.getMessage());
+            }
+            if (update.hasCallbackQuery()) {
+                return handleCallbackQuery(update.getCallbackQuery());
+            }
+        } catch (Exception e) {
+            log.info(e.getMessage());
         }
-        if (update.hasCallbackQuery()) {
-            return handleCallbackQuery(update.getCallbackQuery());
+        if (update.getCallbackQuery() == null) {
+            return SendMessage.builder()
+                    .text(textSender.getText(update.getMessage().getFrom().getId(), "error_unknown"))
+                    .chatId(update.getMessage().getChatId())
+                    .build();
+        }else{
+            return SendMessage.builder()
+                    .text(textSender.getText(update.getCallbackQuery().getMessage().getFrom().getId(), "error_unknown"))
+                    .chatId(update.getCallbackQuery().getMessage().getChatId())
+                    .build();
         }
-        return SendMessage.builder()
-                .text("Unknown update.")
-                .chatId(update.getMessage().getChatId())
-                .build();
     }
 
     private BotApiMethod<? extends Serializable> handleCallbackQuery(CallbackQuery callbackQuery) {

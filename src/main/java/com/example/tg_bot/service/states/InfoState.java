@@ -15,7 +15,7 @@ public class InfoState extends DefaultState {
     private final Map<Commands, DefaultService> services = new HashMap<>();
 
     public InfoState(List<DefaultService> services) {
-        services.forEach(handler -> this.services.put(handler.getHandlerName(), handler));
+        services.forEach(handler -> this.services.put(handler.getExecuteName(), handler));
     }
 
     @Override

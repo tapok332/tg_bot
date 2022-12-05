@@ -1,6 +1,8 @@
 package com.example.tg_bot.service.services;
 
 import com.example.tg_bot.service.DefaultService;
+import com.example.tg_bot.utils.text.TextSender;
+import com.example.tg_bot.service.handlers.menuhandler.MenuHandler;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.service.handlers.deliveryhandler.processing.DeliveryProcessing;
@@ -11,8 +13,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
-import static com.example.tg_bot.utils.text.en.TextsForMessage.*;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
 
 @Service
 @Component
@@ -22,11 +23,13 @@ public class MenuService implements DefaultService {
     private final UserData userData;
     private final UserProcessing userProcessing;
     private final DeliveryProcessing deliveryProcessing;
+    private final TextSender textSender;
+    private final MenuHandler menuHandler;
 
     @Override
-    public SendMessage handle(Message message) {
+    public SendMessage execute(Message message) {
         if (userData.getUsersCurrentBotState(message.getFrom().getId()).equals(Commands.TEXT_PROCESSING)) {
-            return sendMessage(MENU.getText(), message.getChatId());
+            return menuHandler.sendMenu(message);
         }
         return processingMessage(message);
     }
@@ -40,10 +43,10 @@ public class MenuService implements DefaultService {
                 return getAllInfo(userId, chatId);
             }
             case HELP -> {
-                return sendMessage(HELP.getText(), chatId);
+                return sendMessage(textSender.getText(userId, "help_message"), chatId);
             }
             default -> {
-                return sendMessage(UNKNOWN_ERROR.getText(), chatId);
+                return sendMessage(textSender.getText(userId, "error_unknown"), chatId);
             }
         }
     }
@@ -53,7 +56,7 @@ public class MenuService implements DefaultService {
     }
 
     @Override
-    public Commands getHandlerName() {
+    public Commands getExecuteName() {
         return Commands.TEXT_PROCESSING;
     }
 }

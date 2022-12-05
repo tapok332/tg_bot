@@ -1,4 +1,4 @@
-package com.example.tg_bot.utils.utilforsendmessage;
+package com.example.tg_bot.utils.sendmessage;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;

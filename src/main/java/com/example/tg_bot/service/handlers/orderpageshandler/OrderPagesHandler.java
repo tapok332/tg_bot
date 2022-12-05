@@ -2,8 +2,9 @@ package com.example.tg_bot.service.handlers.orderpageshandler;
 
 import com.example.tg_bot.repo.KeyboardRepository;
 import com.example.tg_bot.repo.LaptopRepository;
-import com.example.tg_bot.service.handlers.languagehandler.LanguageHandler;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IteratorUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -11,22 +12,25 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.*;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendPages;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class OrderPagesHandler {
 
-    private List<List<InlineKeyboardButton>> buttons;
     private List<?> items;
     private final LaptopRepository laptopRepository;
     private final KeyboardRepository keyboardRepository;
     private String category;
+    private int currentItem;
     private int currentPage;
     private int pageNumber;
-    private final LanguageHandler languageHandler;
+    private final TextSender textSender;
 
     public BotApiMethod<? extends Serializable> handlePages(CallbackQuery callbackQuery) {
         Long chatId = callbackQuery.getMessage().getChatId();
@@ -34,28 +38,30 @@ public class OrderPagesHandler {
         String callbackQueryData = callbackQuery.getData();
         Long userId = callbackQuery.getFrom().getId();
 
-//        if (callbackQueryData.equals("laptop") || callbackQueryData.equals("keyboard")) {
-//            return sendMessageWithButton(getFirstPage(1, callbackQueryData, userId), chatId, buttons);
-//        }
-        getItems(callbackQueryData, userId);
-        if(items == null){
-            return sendMessage(languageHandler.getText(userId, "error_items"), chatId);
+        getItems(callbackQueryData);
+        if (items == null || items.size() == 0) {
+            return sendMessage(textSender.getText(userId, "error_items"), chatId);
         }
-        return sendPages(chatId, messageId, getPage(callbackQueryData, userId), buttons);
+        try{
+            return sendPages(chatId, messageId, getCurrentItem(), getCurrentButtons(callbackQueryData, userId));
+        } catch (Exception e){
+            log.info(e.getMessage());
+            return sendMessage(textSender.getText(userId, "error_incorrect_command"), chatId);
+        }
     }
 
-    private void getItems(String callbackQueryData, Long userId) {
+    private void getItems(String callbackQueryData) {
         if (callbackQueryData.equals("laptops")) {
             category = "laptops";
-            pageNumber = 1;
-            buttons = getFirstButtons(pageNumber, userId);
             items = IteratorUtils.toList(laptopRepository.findAll().iterator());
         }
         if (callbackQueryData.equals("keyboards")) {
             category = "keyboards";
-            pageNumber = 1;
-            buttons = getFirstButtons(pageNumber, userId);
             items = IteratorUtils.toList(keyboardRepository.findAll().iterator());
+
+            currentItem = 0;
+            currentPage = 1;
+            pageNumber = 1;
         }
     }
 
@@ -64,153 +70,56 @@ public class OrderPagesHandler {
     }
 
     public String getCurrentItem() {
-        return items.get(currentPage-1).toString();
-    }
-
-    private String getPage(String callbackQueryData, Long userId) {
         List<String> item = items.stream()
                 .map(Object::toString)
                 .toList();
 
-        if (item.size() == pageNumber || callbackQueryData.contains("1")) {
-            pageNumber = Integer.parseInt(callbackQueryData.substring(5));
-            buttons = getLastButtons(pageNumber, userId);
-        }
-        if(!callbackQueryData.contains("1") && !callbackQueryData.equals("laptop")
-                && callbackQueryData.equals("keyboard")){
-            pageNumber = Integer.parseInt(callbackQueryData.substring(5));
-            buttons = getButtons(pageNumber, userId);
-        }
-        if (item.get(1) == null) {
-            buttons = getOneButton(pageNumber, userId);
-        }
-
-        return item.get(pageNumber - 1);
+        return item.get(currentItem);
     }
 
-    private String getFirstPage(int pageNumber, String callbackQueryData, Long userId) {
-        if (callbackQueryData.equals("laptops")) {
-            category = "laptops";
-            items = IteratorUtils.toList(laptopRepository.findAll().iterator());
-        }
-        if (callbackQueryData.equals("keyboards")) {
-            category = "keyboards";
-            items = IteratorUtils.toList(keyboardRepository.findAll().iterator());
-        }
-
-
-        List<String> item = items.stream()
-                .map(Object::toString)
-                .toList();
-
-        if (item.size() == pageNumber) {
-            buttons = getOneButton(pageNumber, userId);
-        } else {
-            buttons = getFirstButtons(pageNumber, userId);
+    private List<List<InlineKeyboardButton>> getCurrentButtons(String callbackQueryData, Long userId) {
+        if (callbackQueryData.equals("page 1") || callbackQueryData.equals("laptops")
+                || callbackQueryData.equals("keyboards")) {
+            currentItem = 0;
+            currentPage = 1;
+            pageNumber = 1;
+            return getButtons(userId, List.of(" ", String.valueOf(currentPage), ">"), List.of(" ", "page " + 2));
         }
 
-        return item.get(pageNumber - 1);
+        int pageNumber = Integer.parseInt(callbackQueryData.substring(5));
+
+        if(pageNumber == currentPage){
+            --currentPage;
+        }else {
+            ++currentPage;
+        }
+        if ((pageNumber == 1 && items.size() == 2) || pageNumber == items.size()) {
+            return getButtons(userId, List.of("<", String.valueOf(currentPage), " "),
+                    List.of(String.format("page %d", currentItem - 1), " "));
+        }
+        if (!callbackQueryData.contains("1")) {
+            return getButtons(userId, List.of("<", String.valueOf(currentPage), ">"),
+                    List.of("page " + (currentItem == 1 ? currentItem : --currentItem), "page " + ++pageNumber));
+        }
+        if (items.get(1) == null) {
+            return getButtons(userId, List.of(" ", String.valueOf(currentPage), " "), List.of(" ", " "));
+        }
+        return null;
     }
 
-    private String getSecondPage(int pageNumber, Long userId) {
-        List<String> strings = items.stream()
-                .map(Object::toString)
-                .toList();
-        if (strings.size() == pageNumber) {
-            buttons = getLastButtons(pageNumber, userId);
-        } else {
-            buttons = getButtons(pageNumber, userId);
-        }
-
-        return strings.get(pageNumber - 1);
-    }
-
-    private String getThirdPage(int pageNumber, Long userId) {
-        List<String> strings = items.stream()
-                .map(Object::toString)
-                .toList();
-        if (strings.size() == pageNumber) {
-            buttons = getLastButtons(pageNumber, userId);
-        } else {
-            buttons = getButtons(pageNumber, userId);
-        }
-
-        return strings.get(pageNumber - 1);
-    }
-
-    private List<List<InlineKeyboardButton>> getFirstButtons(int pageNumber, Long userId) {
-        currentPage = pageNumber;
-        String page = languageHandler.getText(userId, "page");
-        InlineKeyboardButton emptyButton = InlineKeyboardButton.builder()
-                .text(" ")
-                .callbackData(" ")
-                .build();
-        InlineKeyboardButton countPage = InlineKeyboardButton.builder()
-                .text(page + pageNumber)
-                .callbackData(" ")
-                .build();
-        InlineKeyboardButton firstPage = InlineKeyboardButton.builder()
-                .text(">")
-                .callbackData("page " + ++pageNumber)
-                .build();
-        List<InlineKeyboardButton> keyboard = List.of(emptyButton, countPage, firstPage);
-
-        return List.of(keyboard);
-    }
-
-    private List<List<InlineKeyboardButton>> getButtons(int pageNumber, Long userId) {
+    private List<List<InlineKeyboardButton>> getButtons(Long userId, List<String> text, List<String> callBackData) {
+        String page = textSender.getText(userId, "page");
         InlineKeyboardButton previousPage = InlineKeyboardButton.builder()
-                .text("<")
-                .callbackData("page " + currentPage)
-                .build();
-        currentPage = pageNumber;
-        String page = languageHandler.getText(userId, "page");
-        InlineKeyboardButton nextPage = InlineKeyboardButton.builder()
-                .text(">")
-                .callbackData("page " + ++pageNumber)
+                .text(text.get(0))
+                .callbackData(callBackData.get(0))
                 .build();
         InlineKeyboardButton countPage = InlineKeyboardButton.builder()
-                .text(page + pageNumber)
-                .callbackData(" ")
-                .build();
-        List<InlineKeyboardButton> keyboard = List.of(previousPage, countPage, nextPage);
-
-        return List.of(keyboard);
-    }
-
-    private List<List<InlineKeyboardButton>> getLastButtons(int pageNumber, Long userId) {
-        InlineKeyboardButton previousPage = InlineKeyboardButton.builder()
-                .text("<")
-                .callbackData("page " + currentPage)
-                .build();
-        currentPage = pageNumber;
-        String page = languageHandler.getText(userId, "page");
-        InlineKeyboardButton countPage = InlineKeyboardButton.builder()
-                .text(page + pageNumber)
+                .text(page + text.get(1))
                 .callbackData(" ")
                 .build();
         InlineKeyboardButton nextPage = InlineKeyboardButton.builder()
-                .text(" ")
-                .callbackData(" ")
-                .build();
-        List<InlineKeyboardButton> keyboard = List.of(previousPage, countPage, nextPage);
-
-        return List.of(keyboard);
-    }
-
-    private List<List<InlineKeyboardButton>> getOneButton(int pageNumber, Long userId) {
-        InlineKeyboardButton previousPage = InlineKeyboardButton.builder()
-                .text(" ")
-                .callbackData(" ")
-                .build();
-        String page = languageHandler.getText(userId, "page");
-        InlineKeyboardButton countPage = InlineKeyboardButton.builder()
-                .text(page + pageNumber)
-                .callbackData(" ")
-                .build();
-        InlineKeyboardButton nextPage = InlineKeyboardButton.builder()
-                .text(" ")
-                .callbackData(" ")
+                .text(text.get(2))
+                .callbackData(callBackData.get(1))
                 .build();
         List<InlineKeyboardButton> keyboard = List.of(previousPage, countPage, nextPage);
 

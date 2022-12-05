@@ -1,7 +1,7 @@
 package com.example.tg_bot.service.handlers.ordershandler;
 
 import com.example.tg_bot.service.handlers.informationhandler.InfoHandler;
-import com.example.tg_bot.service.handlers.languagehandler.LanguageHandler;
+import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.service.handlers.ordershandler.orderprocessing.OrderProcessing;
 import com.example.tg_bot.service.states.OrderState;
 import com.example.tg_bot.utils.cache.UserData;
@@ -11,19 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
-import static com.example.tg_bot.utils.text.en.TextsForMessage.ORDERS_INFO;
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessageWithButton;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessageWithButton;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +27,7 @@ public class OrderHandler {
     private final UserValidate userValidate;
     private final InfoHandler infoHandler;
     private final OrderProcessing orderProcessing;
-    private final LanguageHandler languageHandler;
+    private final TextSender textSender;
 
     public SendMessage handleOrder(Message message) {
         String inputMessage = message.getText();
@@ -43,10 +36,10 @@ public class OrderHandler {
                 .getId();
         Commands commandNow = userData.getUsersCurrentBotState(userId);
 
-        if (inputMessage.equals(languageHandler.getText(userId, "go_buy"))) {
-            return sendMessageWithButton(ORDERS_INFO.getText(), message.getChatId(), getOrderButtons(userId));
+        if (inputMessage.equals(textSender.getText(userId, "go_buy"))) {
+            return sendMessageWithButton(textSender.getText(userId, "orders_info"), message.getChatId(), getOrderButtons(userId));
         }
-        if (inputMessage.equals(languageHandler.getText(userId, "menu"))) {
+        if (inputMessage.equals(textSender.getText(userId, "menu_message"))) {
             commandNow = Commands.TEXT_PROCESSING;
         }
 
@@ -54,10 +47,15 @@ public class OrderHandler {
     }
 
     public SendMessage handleOrderInfo(Message message, String item) {
-        return validateUser(message, item);
+        if (item.contains("false")) {
+            return sendMessage(textSender.getText(message.getFrom().getId(), "error_no_in_stock"), message.getChatId());
+        } else {
+
+            return validateUser(message, item.substring(12, 13));
+        }
     }
 
-    private SendMessage validateUser(Message message, String item) {
+    private SendMessage validateUser(Message message, String itemId) {
         Long userId = message.getFrom().getId();
         if (!userValidate.hasUser(userId) || !userValidate.hasUserAddress(userId)) {
             message.setText("without info");
@@ -65,23 +63,23 @@ public class OrderHandler {
             return infoHandler.handleInfo(message);
         }
         if (userValidate.hasUser(userId) && userValidate.hasUserAddress(userId)) {
-            orderProcessing.getOrderInfo(item.substring(12, 13));
-            message.setText(languageHandler.getText(userId, "check_info"));
+            String item = orderProcessing.getOrderInfo(message.getFrom().getId(), itemId);
+            message.setText(textSender.getText(userId, "check_info"));
 
             String userInfo = infoHandler.handleInfo(message).getText();
 
             return sendMessage(item + "\n\n" + userInfo, message.getChatId());
         }
-        return sendMessage(languageHandler.getText(userId, "error_validate"), message.getChatId());
+        return sendMessage(textSender.getText(userId, "error_validate"), message.getChatId());
     }
 
     private List<List<InlineKeyboardButton>> getOrderButtons(Long userId) {
         InlineKeyboardButton laptopsButton = InlineKeyboardButton.builder()
-                .text(languageHandler.getText(userId, "laptops"))
+                .text(textSender.getText(userId, "laptops"))
                 .callbackData("laptops")
                 .build();
         InlineKeyboardButton keyboardsButton = InlineKeyboardButton.builder()
-                .text(languageHandler.getText(userId, "keyboards"))
+                .text(textSender.getText(userId, "keyboards"))
                 .callbackData("keyboards")
                 .build();
         List<InlineKeyboardButton> keyboard = List.of(laptopsButton, keyboardsButton);

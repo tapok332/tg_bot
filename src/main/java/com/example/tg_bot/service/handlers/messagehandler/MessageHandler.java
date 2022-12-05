@@ -16,9 +16,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import static com.example.tg_bot.utils.commands.Commands.CHECK_ALL_INFO;
-import static com.example.tg_bot.utils.commands.Commands.MENU;
-import static com.example.tg_bot.utils.text.en.TextsForMessage.NO_IN_STOCK;
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
 
 @Service
 @Component
@@ -66,10 +64,6 @@ public class MessageHandler {
 
         userData.saveUsersCurrentBotState(userId, CHECK_ALL_INFO);
 
-        if (item.contains("false")) {
-            return sendMessage(NO_IN_STOCK.getText(), message.getChatId());
-        } else {
-            return orderHandler.handleOrderInfo(message, item);
-        }
+        return orderHandler.handleOrderInfo(message, item);
     }
 }

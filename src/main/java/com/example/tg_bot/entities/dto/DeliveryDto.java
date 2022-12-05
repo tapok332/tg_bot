@@ -15,7 +15,7 @@ public class DeliveryDto {
     private String street;
     private String postCode;
     private String deliveryCompany;
-    private String postalOffice;
+    private Integer postalOffice;
     private String mail;
     private String phoneNum;
 }

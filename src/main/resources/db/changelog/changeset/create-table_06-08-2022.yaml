@@ -51,7 +51,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: postal_office
-                  type: varchar(255)
+                  type: bigint(5)
                   constraints:
                     nullable: false
               - column:

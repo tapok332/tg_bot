@@ -4,13 +4,13 @@ import com.example.tg_bot.service.handlers.informationhandler.InfoHandler;
 import com.example.tg_bot.service.handlers.ordershandler.OrderHandler;
 import com.example.tg_bot.service.services.MenuService;
 import com.example.tg_bot.utils.commands.Commands;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
-import static com.example.tg_bot.utils.text.en.TextsForMessage.INCORRECT_COMMAND;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
 
 @Component
 @RequiredArgsConstructor
@@ -18,6 +18,8 @@ public class BotState {
     private final InfoHandler infoHandler;
     private final OrderHandler orderHandler;
     private final MenuService menuService;
+
+    private final TextSender textSender;
 
     public SendMessage processInputMessage(Commands currentState, Message message) {
         return findMessageHandler(currentState, message);
@@ -33,10 +35,11 @@ public class BotState {
                 return orderHandler.handleOrder(message);
             }
             case HELP, TEXT_PROCESSING -> {
-                return menuService.handle(message);
+                return menuService.execute(message);
             }
             default -> {
-                return sendMessage(INCORRECT_COMMAND.getText(), message.getChatId());
+                return sendMessage(textSender.getText(message.getFrom().getId(), "error_unknown"),
+                        message.getChatId());
             }
         }
     }

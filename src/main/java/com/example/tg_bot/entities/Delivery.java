@@ -39,7 +39,7 @@ public class Delivery {
     private String deliveryCompany;
     @NotNull
     @Column(name = "postal_office")
-    private String postalOffice;
+    private Integer postalOffice;
     @NotNull
     @Column(name = "mail")
     private String mail;
@@ -49,16 +49,4 @@ public class Delivery {
 
     @OneToOne(mappedBy = "address")
     private User user;
-
-    @Override
-    public String toString() {
-        return "Country = " + country + ",\n" +
-                "Region = " + region + ",\n" +
-                "City = " + city + ",\n" +
-                "Street = " + street + ",\n" +
-                "PostCode = " + postCode + ",\n" +
-                "DeliveryCompany = " + deliveryCompany + ",\n" +
-                "PostalOffice = " + postalOffice + ",\n" +
-                "PhoneNum = " + phoneNum;
-    }
 }

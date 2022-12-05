@@ -1,7 +1,7 @@
 package com.example.tg_bot.service.handlers.informationhandler;
 
 import com.example.tg_bot.service.handlers.commandshandler.CommandsHandler;
-import com.example.tg_bot.service.handlers.languagehandler.LanguageHandler;
+import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.service.states.InfoState;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
@@ -22,17 +22,15 @@ public class InfoHandler {
 
     private final InfoState infoState;
     private final UserData userData;
-    private final LanguageHandler languageHandler;
+    private final TextSender textSender;
     private final CommandsHandler commandsHandler;
 
     public SendMessage handleInfo(Message message) {
         String inputMessage = message.getText();
-        Long userId = message
-                .getFrom()
-                .getId();
-        if (inputMessage.equals(languageHandler.getText(userId, "my_info"))
-                || inputMessage.equals("error_info_handle")
-        || inputMessage.equals("/start")) {
+        Long userId = message.getFrom().getId();
+        if (inputMessage.equals(textSender.getText(userId, "my_info"))
+                || inputMessage.equals("without info")
+                || inputMessage.equals("/start")) {
             return commandsHandler.info(message, getInfoKeyboard(userId));
         }
         Commands commandNow = commandsHandler.info(message);
@@ -44,21 +42,21 @@ public class InfoHandler {
     private ReplyKeyboardMarkup getInfoKeyboard(Long userId) {
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
-        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setSelective(false);
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(false);
 
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow firstRow = new KeyboardRow();
-        firstRow.add(new KeyboardButton(languageHandler.getText(userId, "user_info")));
-        firstRow.add(new KeyboardButton(languageHandler.getText(userId, "user_delivery_info")));
+        firstRow.add(new KeyboardButton(textSender.getText(userId, "user_info")));
+        firstRow.add(new KeyboardButton(textSender.getText(userId, "user_delivery_info")));
         KeyboardRow secondRow = new KeyboardRow();
-        secondRow.add(new KeyboardButton(languageHandler.getText(userId, "check_info")));
-        secondRow.add(new KeyboardButton(languageHandler.getText(userId, "delete_info")));
+        secondRow.add(new KeyboardButton(textSender.getText(userId, "check_info")));
+        secondRow.add(new KeyboardButton(textSender.getText(userId, "delete_info")));
         KeyboardRow thirdRow = new KeyboardRow();
-        thirdRow.add(new KeyboardButton(languageHandler.getText(userId, "menu")));
+        thirdRow.add(new KeyboardButton(textSender.getText(userId, "menu")));
         KeyboardRow fourthRow = new KeyboardRow();
-        fourthRow.add(new KeyboardButton(languageHandler.getText(userId, "help")));
+        fourthRow.add(new KeyboardButton(textSender.getText(userId, "help")));
         keyboard.add(firstRow);
         keyboard.add(secondRow);
         keyboard.add(thirdRow);

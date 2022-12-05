@@ -39,19 +39,4 @@ public class User {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Delivery address;
-
-    @Override
-    public String toString() {
-        if(address != null){
-            return "Your name = " + name + ",\n" +
-                    "Your surname = " + surname + ",\n" +
-                    "Your patronymic = " + patronymic + ",\n" +
-                    "Your age = " + age + ",\n" +
-                    "Your address: ";
-        }
-        return "Your name = " + name + ",\n" +
-                "Your surname = " + surname + ",\n" +
-                "Your patronymic = " + patronymic + ",\n" +
-                "Your age = " + age;
-    }
 }

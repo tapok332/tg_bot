@@ -1,6 +1,6 @@
 package com.example.tg_bot.service.handlers.menuhandler;
 
-import com.example.tg_bot.utils.cache.UserData;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -11,22 +11,22 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
-import static com.example.tg_bot.utils.text.en.TextsForMessage.CHOOSE_LANGUAGE;
-import static com.example.tg_bot.utils.text.en.TextsForMessage.MENU;
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessageWithKeyboard;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessageWithKeyboard;
 
 @Component
 @RequiredArgsConstructor
 public class MenuHandler {
-
-    private final UserData userData;
+    private final TextSender textSender;
+    private static final String CHOOSE_LANGUAGE = """
+        Please choose the language:
+        English or Ukrainian
+        
+        Будь-ласка виберіть мову:
+        Англійська або Українська""";
 
     public SendMessage handleMenu(Message message) {
-        return sendMessageWithKeyboard(CHOOSE_LANGUAGE.getText(), message.getChatId(), getChooseLanguageKeyboard());
+        return sendMessageWithKeyboard(CHOOSE_LANGUAGE, message.getChatId(), getChooseLanguageKeyboard());
     }
 
     private ReplyKeyboardMarkup getChooseLanguageKeyboard() {
@@ -47,14 +47,12 @@ public class MenuHandler {
     }
 
     public SendMessage sendMenu(Message message) {
-        return sendMessageWithKeyboard(MENU.getText(), message.getChatId(), getStartKeyboard(message.getFrom().getId()));
+        return sendMessageWithKeyboard(textSender.getText(message.getFrom().getId(), "menu_message"),
+                message.getChatId(), getStartKeyboard(message.getFrom().getId()));
     }
 
 
     private ReplyKeyboardMarkup getStartKeyboard(Long userId) {
-        Locale userLanguage = userData.getUsersLanguage(userId) == null ? new Locale("en", "EN")
-                : userData.getUsersLanguage(userId);
-        ResourceBundle bundle = ResourceBundle.getBundle("texts.text", userLanguage);
 
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
@@ -64,11 +62,11 @@ public class MenuHandler {
 
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow firstRow = new KeyboardRow();
-        firstRow.add(new KeyboardButton(bundle.getString("go_buy")));
+        firstRow.add(new KeyboardButton(textSender.getText(userId, "go_buy")));
         KeyboardRow secondRow = new KeyboardRow();
-        secondRow.add(new KeyboardButton(bundle.getString("my_info")));
+        secondRow.add(new KeyboardButton(textSender.getText(userId, "my_info")));
         KeyboardRow thirdRow = new KeyboardRow();
-        thirdRow.add(new KeyboardButton(bundle.getString("help")));
+        thirdRow.add(new KeyboardButton(textSender.getText(userId, "help")));
         keyboard.add(firstRow);
         keyboard.add(secondRow);
         keyboard.add(thirdRow);

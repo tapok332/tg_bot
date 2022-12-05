@@ -5,6 +5,7 @@ import com.example.tg_bot.entities.Delivery;
 import com.example.tg_bot.repo.DeliveryRepository;
 import com.example.tg_bot.repo.UserRepository;
 import com.example.tg_bot.service.handlers.InfoHandler;
+import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import javax.transaction.Transactional;
 
-import static com.example.tg_bot.utils.text.en.TextsForMessage.*;
-import static com.example.tg_bot.utils.utilforsendmessage.Sending.sendMessage;
+import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +24,7 @@ public class DeliveryProcessing implements InfoHandler {
     private final UserRepository userRepository;
     private final UserData userData;
     private final DeliveryDto deliveryDto;
+    private final TextSender textSender;
 
     @Override
     public SendMessage saveInfo(Message message) {
@@ -35,42 +36,48 @@ public class DeliveryProcessing implements InfoHandler {
         if (usersDeliveryInfoState.getCountry() == null) {
             deliveryDto.setCountry(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your region: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_region"), chatId);
         }
         if (usersDeliveryInfoState.getRegion() == null) {
             deliveryDto.setRegion(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your city: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_city"), chatId);
         }
         if (usersDeliveryInfoState.getCity() == null) {
             deliveryDto.setCity(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your street: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_street"), chatId);
         }
         if (usersDeliveryInfoState.getStreet() == null) {
             deliveryDto.setStreet(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your post-code: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_post_code"), chatId);
         }
         if (usersDeliveryInfoState.getPostCode() == null) {
             deliveryDto.setPostCode(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your delivery company: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_delivery_company"), chatId);
         }
         if (usersDeliveryInfoState.getDeliveryCompany() == null) {
             deliveryDto.setDeliveryCompany(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your post office number: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_post_office"), chatId);
         }
         if (usersDeliveryInfoState.getPostalOffice() == null) {
-            deliveryDto.setPostalOffice(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your mail: ", chatId);
+            try {
+                deliveryDto.setPostalOffice(Integer.parseInt(message.getText()));
+            } catch (NumberFormatException ex){
+                return sendMessage(textSender.getText(userId, "error_post_office"), chatId);
+            }
+            finally {
+                userData.saveUsersDeliveryInfoState(userId, deliveryDto);
+            }
+            return sendMessage(textSender.getText(userId, "send_mail"), chatId);
         }
         if (usersDeliveryInfoState.getMail() == null) {
             deliveryDto.setMail(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your phone number: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_phone_number"), chatId);
         }
         if (usersDeliveryInfoState.getPhoneNum() == null) {
             deliveryDto.setPhoneNum(message.getText());
@@ -79,7 +86,7 @@ public class DeliveryProcessing implements InfoHandler {
         }
         userData.saveUsersCurrentBotState(userId, Commands.INFO);
 
-        return sendMessage("Thanks for your delivery information.", chatId);
+        return sendMessage(textSender.getText(userId, "thanks_message"), chatId);
     }
 
     @Override
@@ -90,42 +97,48 @@ public class DeliveryProcessing implements InfoHandler {
         if (usersDeliveryInfoState.getCountry() == null) {
             deliveryDto.setCountry(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new region: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_region"), chatId);
         }
         if (usersDeliveryInfoState.getRegion() == null) {
             deliveryDto.setRegion(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new city: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_city"), chatId);
         }
         if (usersDeliveryInfoState.getCity() == null) {
             deliveryDto.setCity(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new street: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_street"), chatId);
         }
         if (usersDeliveryInfoState.getStreet() == null) {
             deliveryDto.setStreet(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new post-code: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_post_code"), chatId);
         }
         if (usersDeliveryInfoState.getPostCode() == null) {
             deliveryDto.setPostCode(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new delivery company: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_delivery_company"), chatId);
         }
         if (usersDeliveryInfoState.getDeliveryCompany() == null) {
             deliveryDto.setDeliveryCompany(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new post office number: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_post_office"), chatId);
         }
         if (usersDeliveryInfoState.getPostalOffice() == null) {
-            deliveryDto.setPostalOffice(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new mail: ", chatId);
+            try {
+                deliveryDto.setPostalOffice(Integer.parseInt(message.getText()));
+            } catch (NumberFormatException ex){
+                return sendMessage(textSender.getText(userId, "error_post_office"), chatId);
+            }
+            finally {
+                userData.saveUsersDeliveryInfoState(userId, deliveryDto);
+            }
+            return sendMessage(textSender.getText(userId, "send_mail"), chatId);
         }
         if (usersDeliveryInfoState.getMail() == null) {
             deliveryDto.setMail(message.getText());
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage("Send your new phone number: ", chatId);
+            return sendMessage(textSender.getText(userId, "send_phone_number"), chatId);
         }
         if (usersDeliveryInfoState.getPhoneNum() == null) {
             deliveryDto.setPhoneNum(message.getText());
@@ -134,7 +147,7 @@ public class DeliveryProcessing implements InfoHandler {
         }
         userData.saveUsersCurrentBotState(userId, Commands.INFO);
 
-        return sendMessage("Thanks for your delivery information.", chatId);
+        return sendMessage(textSender.getText(userId, "thanks_message"), chatId);
     }
 
     @Override
@@ -142,12 +155,21 @@ public class DeliveryProcessing implements InfoHandler {
         if (userRepository.findByUserId(userId).isPresent() && userRepository.findByUserId(userId).get().getAddress() != null) {
             Long addressId = userRepository.findByUserId(userId).get().getAddress().getId();
             if (deliveryRepository.findById(addressId).isPresent()) {
-                return deliveryRepository.findById(addressId).get().toString();
+                Delivery address = deliveryRepository.findById(addressId).get();
+               return textSender.getText(userId, "country_info") + address.getCountry()
+                       + "\n" + textSender.getText(userId, "region_info") + address.getRegion()
+                       + "\n" + textSender.getText(userId, "city_info") + address.getCity()
+                       + "\n" + textSender.getText(userId, "street_info") + address.getStreet()
+                       + "\n" + textSender.getText(userId, "post_code_info") + address.getPostCode()
+                       + "\n" + textSender.getText(userId, "delivery_company_info") + address.getDeliveryCompany()
+                       + "\n" + textSender.getText(userId, "post_office_info") + address.getPostalOffice()
+                       + "\n" + textSender.getText(userId, "mail_info") + address.getMail()
+                       + "\n" + textSender.getText(userId, "phone_number_info") + address.getPhoneNum();
             }
         }
         userData.saveUsersCurrentBotState(userId, Commands.INFO);
 
-        return ERROR_DELIVERY_CHECK_INFO.getText();
+        return textSender.getText(userId, "error_address_check_info");
     }
 
     private void buildDeliveryAndSave(Long userId) {
@@ -195,7 +217,7 @@ public class DeliveryProcessing implements InfoHandler {
     @Transactional
     public SendMessage deleteAllInfo(Long userId, Long chatId) {
         if(userRepository.findByUserId(userId).isEmpty() || userRepository.findByUserId(userId).get().getAddress() == null){
-            return sendMessage(WITHOUT_INFO.getText(), chatId);
+            return sendMessage(textSender.getText(userId, "error_user_check_info"), chatId);
         }
         Long addressId = userRepository.findByUserId(userId).get().getAddress().getId();
 
@@ -203,6 +225,6 @@ public class DeliveryProcessing implements InfoHandler {
         userRepository.deleteByUserId(userId);
         userData.saveUsersCurrentBotState(userId, Commands.INFO);
 
-        return sendMessage(DELETED_INFO.getText(), chatId);
+        return sendMessage(textSender.getText(userId, "deleted_info"), chatId);
     }
 }
