@@ -1,12 +1,12 @@
 package com.example.tg_bot.service.services;
 
 import com.example.tg_bot.service.DefaultService;
-import com.example.tg_bot.utils.text.TextSender;
+import com.example.tg_bot.service.handlers.deliveryhandler.processing.DeliveryProcessing;
 import com.example.tg_bot.service.handlers.menuhandler.MenuHandler;
+import com.example.tg_bot.service.handlers.userhandler.processing.UserProcessing;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
-import com.example.tg_bot.service.handlers.deliveryhandler.processing.DeliveryProcessing;
-import com.example.tg_bot.service.handlers.userhandler.processing.UserProcessing;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.stereotype.Component;
@@ -28,7 +28,7 @@ public class MenuService implements DefaultService {
 
     @Override
     public SendMessage execute(Message message) {
-        if (userData.getUsersCurrentBotState(message.getFrom().getId()).equals(Commands.TEXT_PROCESSING)) {
+        if (userData.getUsersCurrentBotState(message.getFrom().getId()).equals(Commands.MENU)) {
             return menuHandler.sendMenu(message);
         }
         return processingMessage(message);
@@ -57,6 +57,6 @@ public class MenuService implements DefaultService {
 
     @Override
     public Commands getExecuteName() {
-        return Commands.TEXT_PROCESSING;
+        return Commands.MENU;
     }
 }

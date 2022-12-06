@@ -34,7 +34,7 @@ public class BotState {
             case BUY, LAPTOP_ORDERS, KEYBOARD_ORDERS -> {
                 return orderHandler.handleOrder(message);
             }
-            case HELP, TEXT_PROCESSING -> {
+            case HELP, MENU -> {
                 return menuService.execute(message);
             }
             default -> {

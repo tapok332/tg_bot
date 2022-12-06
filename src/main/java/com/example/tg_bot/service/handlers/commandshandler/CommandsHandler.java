@@ -64,7 +64,7 @@ public class CommandsHandler {
 
     private Commands getMenuOrHelp(String inputMessage, Long userId) {
         if (inputMessage.equals(textSender.getText(userId, "menu"))) {
-            return Commands.TEXT_PROCESSING;
+            return Commands.MENU;
         }
         if (inputMessage.equals(textSender.getText(userId, "help"))) {
             return Commands.HELP;

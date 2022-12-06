@@ -8,6 +8,7 @@ import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -15,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserProcessing implements InfoHandler {
     private final UserData userData;
@@ -26,21 +28,25 @@ public class UserProcessing implements InfoHandler {
     public SendMessage saveInfo(Message message) {
         Long chatId = message.getChatId();
         Long userId = message.getFrom().getId();
+        String username = message.getFrom().getUserName();
         UserDto usersInfoState = userData.getUsersInfoState(userId) == null
                 ? new UserDto()
                 : userData.getUsersInfoState(userId);
 
         if (usersInfoState.getName() == null) {
+            log.info("User {} with id {} execute set name in chat {}", username, userId, chatId);
             userDto.setName(message.getText());
             userData.saveUsersInfoState(userId, userDto);
             return sendMessage(textSender.getText(userId, "send_surname"), chatId);
         }
         if (usersInfoState.getSurname() == null) {
+            log.info("User {} with id {} execute set surname in chat {}", username, userId, chatId);
             usersInfoState.setSurname(message.getText());
             userData.saveUsersInfoState(userId, userDto);
             return sendMessage(textSender.getText(userId, "send_patronymic"), chatId);
         }
         if (usersInfoState.getPatronymic() == null) {
+            log.info("User {} with id {} execute set patronymic in chat {}", username, userId, chatId);
             usersInfoState.setPatronymic(message.getText());
             userData.saveUsersInfoState(userId, userDto);
             return sendMessage(textSender.getText(userId, "send_age"), chatId);
@@ -48,38 +54,45 @@ public class UserProcessing implements InfoHandler {
         if (usersInfoState.getAge() == null) {
             try {
                 if (Integer.parseInt(message.getText()) < 12 || Integer.parseInt(message.getText()) > 125) {
+                    log.info("User {} with id {} failed execute set age in chat {}", username, userId, chatId);
                     return sendMessage(textSender.getText(userId, "error_age"), chatId);
                 } else {
+                    log.info("User {} with id {} execute set age in chat {}", username, userId, chatId);
                     usersInfoState.setAge(Integer.parseInt(message.getText()));
                 }
             } catch (NumberFormatException ex) {
+                log.info("User {} with id {} failed execute set age in chat {}", username, userId, chatId);
                 return sendMessage(textSender.getText(userId, "error_age"), chatId);
             }
             userData.saveUsersInfoState(userId, userDto);
             userData.saveUsersCurrentBotState(userId, Commands.INFO);
             buildUserAndSave(message.getFrom().getId());
         }
-        return sendMessage(textSender.getText(userId, "thanks_message"), chatId);
+        return sendMessage(textSender.getText(userId, "thanks_user_message"), chatId);
     }
 
     @Override
     public SendMessage updateInfo(Message message) {
         Long chatId = message.getChatId();
         Long userId = message.getFrom().getId();
+        String username = message.getFrom().getUserName();
         UserDto usersInfoState = userData.getUsersInfoState(userId) != null
                 ? userData.getUsersInfoState(userId)
                 : new UserDto();
         if (usersInfoState.getName() == null) {
+            log.info("User {} with id {} execute update name in chat {}", username, userId, chatId);
             userDto.setName(message.getText());
             userData.saveUsersInfoState(userId, userDto);
             return sendMessage(textSender.getText(userId, "send_surname"), chatId);
         }
         if (usersInfoState.getSurname() == null) {
+            log.info("User {} with id {} execute update surname in chat {}", username, userId, chatId);
             usersInfoState.setSurname(message.getText());
             userData.saveUsersInfoState(userId, userDto);
             return sendMessage(textSender.getText(userId, "send_patronymic"), chatId);
         }
         if (usersInfoState.getPatronymic() == null) {
+            log.info("User {} with id {} execute update patronymic in chat {}", username, userId, chatId);
             usersInfoState.setPatronymic(message.getText());
             userData.saveUsersInfoState(userId, userDto);
             return sendMessage(textSender.getText(userId, "send_age"), chatId);
@@ -87,11 +100,14 @@ public class UserProcessing implements InfoHandler {
         if (usersInfoState.getAge() == null) {
             try {
                 if (Integer.parseInt(message.getText()) < 12 || Integer.parseInt(message.getText()) > 125) {
+                    log.info("User {} with id {} failed execute update age in chat {}", username, userId, chatId);
                     return sendMessage(textSender.getText(userId, "error_age"), chatId);
                 } else {
+                    log.info("User {} with id {} execute update age in chat {}", username, userId, chatId);
                     usersInfoState.setAge(Integer.parseInt(message.getText()));
                 }
             } catch (NumberFormatException ex) {
+                log.info("User {} with id {} failed execute update age in chat {}", username, userId, chatId);
                 return sendMessage(textSender.getText(userId, "error_age"), chatId);
             }
             userData.saveUsersInfoState(userId, userDto);

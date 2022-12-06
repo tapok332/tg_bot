@@ -1,9 +1,8 @@
 package com.example.tg_bot.utils.cache;
 
-import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.entities.dto.DeliveryDto;
 import com.example.tg_bot.entities.dto.UserDto;
-import com.example.tg_bot.utils.text.Language;
+import com.example.tg_bot.utils.commands.Commands;
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +26,7 @@ public class UserData implements DataCache {
     @Override
     public Commands getUsersCurrentBotState(Long userId) {
         if(usersBotStates.get(userId) == null){
-            return Commands.NONE;
+            return Commands.MENU;
         }
         return usersBotStates.get(userId);
     }

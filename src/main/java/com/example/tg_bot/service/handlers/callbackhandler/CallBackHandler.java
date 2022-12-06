@@ -41,7 +41,6 @@ public class CallBackHandler {
             case "keyboards" -> replyMessage = getKeyboardsItems(userId, callbackQuery);
         }
 
-        log.info("Method {}", replyMessage.getMethod());
         return replyMessage;
     }
 

@@ -8,6 +8,6 @@ spring:
     password: admin
 
 bot:
-  name: AllIn
-  token: 5522683116:AAEa1pMxBU1mwXjZKEY1PleLWt-pqQuOcFM
+  name: Computer shop ZKS-21
+  token: 5934201310:AAFUii1hwaKzDrfoKF8Sq8EX_mROR3MVL20
 

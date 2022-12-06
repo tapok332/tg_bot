@@ -1,11 +1,11 @@
 package com.example.tg_bot.service.handlers.ordershandler;
 
 import com.example.tg_bot.service.handlers.informationhandler.InfoHandler;
-import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.service.handlers.ordershandler.orderprocessing.OrderProcessing;
 import com.example.tg_bot.service.states.OrderState;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
+import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.validation.UserValidate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,7 +40,7 @@ public class OrderHandler {
             return sendMessageWithButton(textSender.getText(userId, "orders_info"), message.getChatId(), getOrderButtons(userId));
         }
         if (inputMessage.equals(textSender.getText(userId, "menu_message"))) {
-            commandNow = Commands.TEXT_PROCESSING;
+            commandNow = Commands.MENU;
         }
 
         return orderState.processInputMessage(commandNow, message);
