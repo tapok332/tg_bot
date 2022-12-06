@@ -12,7 +12,6 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
@@ -27,9 +26,7 @@ public class OrderPagesHandler {
     private final LaptopRepository laptopRepository;
     private final KeyboardRepository keyboardRepository;
     private String category;
-    private int currentItem;
-    private int currentPage;
-    private int pageNumber;
+    private int previous;
     private final TextSender textSender;
 
     public BotApiMethod<? extends Serializable> handlePages(CallbackQuery callbackQuery) {
@@ -43,7 +40,7 @@ public class OrderPagesHandler {
             return sendMessage(textSender.getText(userId, "error_items"), chatId);
         }
         try{
-            return sendPages(chatId, messageId, getCurrentItem(), getCurrentButtons(callbackQueryData, userId));
+            return sendPages(chatId, messageId, getCurrentButtons(callbackQueryData, userId), getCurrentItem());
         } catch (Exception e){
             log.info(e.getMessage());
             return sendMessage(textSender.getText(userId, "error_incorrect_command"), chatId);
@@ -58,10 +55,6 @@ public class OrderPagesHandler {
         if (callbackQueryData.equals("keyboards")) {
             category = "keyboards";
             items = IteratorUtils.toList(keyboardRepository.findAll().iterator());
-
-            currentItem = 0;
-            currentPage = 1;
-            pageNumber = 1;
         }
     }
 
@@ -74,35 +67,33 @@ public class OrderPagesHandler {
                 .map(Object::toString)
                 .toList();
 
-        return item.get(currentItem);
+        return item.get(previous);
     }
 
     private List<List<InlineKeyboardButton>> getCurrentButtons(String callbackQueryData, Long userId) {
+        int pageNumber;
+        int next;
         if (callbackQueryData.equals("page 1") || callbackQueryData.equals("laptops")
                 || callbackQueryData.equals("keyboards")) {
-            currentItem = 0;
-            currentPage = 1;
             pageNumber = 1;
-            return getButtons(userId, List.of(" ", String.valueOf(currentPage), ">"), List.of(" ", "page " + 2));
+            previous = 0;
+            next = 2;
+            return getButtons(userId, List.of(" ", String.valueOf(pageNumber), ">"), List.of(" ", "page " + next));
         }
 
-        int pageNumber = Integer.parseInt(callbackQueryData.substring(5));
-
-        if(pageNumber == currentPage){
-            --currentPage;
-        }else {
-            ++currentPage;
-        }
+        pageNumber = Integer.parseInt(callbackQueryData.substring(5));
+        previous = pageNumber - 1;
+        next = pageNumber + 1;
         if ((pageNumber == 1 && items.size() == 2) || pageNumber == items.size()) {
-            return getButtons(userId, List.of("<", String.valueOf(currentPage), " "),
-                    List.of(String.format("page %d", currentItem - 1), " "));
+            return getButtons(userId, List.of("<", String.valueOf(pageNumber), " "),
+                    List.of(String.format("page %d", previous), " "));
         }
         if (!callbackQueryData.contains("1")) {
-            return getButtons(userId, List.of("<", String.valueOf(currentPage), ">"),
-                    List.of("page " + (currentItem == 1 ? currentItem : --currentItem), "page " + ++pageNumber));
+            return getButtons(userId, List.of("<", String.valueOf(pageNumber), ">"),
+                    List.of("page " + previous, "page " + next));
         }
         if (items.get(1) == null) {
-            return getButtons(userId, List.of(" ", String.valueOf(currentPage), " "), List.of(" ", " "));
+            return getButtons(userId, List.of(" ", String.valueOf(pageNumber), " "), List.of(" ", " "));
         }
         return null;
     }

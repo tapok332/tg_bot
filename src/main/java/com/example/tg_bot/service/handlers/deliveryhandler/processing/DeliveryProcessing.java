@@ -1,13 +1,13 @@
 package com.example.tg_bot.service.handlers.deliveryhandler.processing;
 
-import com.example.tg_bot.entities.dto.DeliveryDto;
 import com.example.tg_bot.entities.Delivery;
+import com.example.tg_bot.entities.dto.DeliveryDto;
 import com.example.tg_bot.repo.DeliveryRepository;
 import com.example.tg_bot.repo.UserRepository;
 import com.example.tg_bot.service.handlers.InfoHandler;
-import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -75,12 +75,20 @@ public class DeliveryProcessing implements InfoHandler {
             return sendMessage(textSender.getText(userId, "send_mail"), chatId);
         }
         if (usersDeliveryInfoState.getMail() == null) {
-            deliveryDto.setMail(message.getText());
+            if (message.getText().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+                deliveryDto.setMail(message.getText());
+            } else {
+                return sendMessage(textSender.getText(userId, "error_mail"), chatId);
+            }
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
             return sendMessage(textSender.getText(userId, "send_phone_number"), chatId);
         }
         if (usersDeliveryInfoState.getPhoneNum() == null) {
-            deliveryDto.setPhoneNum(message.getText());
+            if (message.getText().matches("^[+][0-9]{3}[0-9]{9}$")) {
+                deliveryDto.setPhoneNum(message.getText());
+            } else {
+                return sendMessage(textSender.getText(userId, "error_phone_num"), chatId);
+            }
             userData.saveUsersDeliveryInfoState(userId, deliveryDto);
             buildDeliveryAndSave(userId);
         }

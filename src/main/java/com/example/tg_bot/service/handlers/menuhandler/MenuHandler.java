@@ -18,15 +18,13 @@ import static com.example.tg_bot.utils.sendmessage.Sending.sendMessageWithKeyboa
 @RequiredArgsConstructor
 public class MenuHandler {
     private final TextSender textSender;
-    private static final String CHOOSE_LANGUAGE = """
-        Please choose the language:
-        English or Ukrainian
-        
-        Будь-ласка виберіть мову:
-        Англійська або Українська""";
 
     public SendMessage handleMenu(Message message) {
-        return sendMessageWithKeyboard(CHOOSE_LANGUAGE, message.getChatId(), getChooseLanguageKeyboard());
+        if (message.getText().equals("/start")) {
+            return sendMessageWithKeyboard(textSender.getText(message.getFrom().getId(), "start"), message.getChatId(), getChooseLanguageKeyboard());
+        } else {
+            return sendMessageWithKeyboard(textSender.getText(message.getFrom().getId(), "choose_language"), message.getChatId(), getChooseLanguageKeyboard());
+        }
     }
 
     private ReplyKeyboardMarkup getChooseLanguageKeyboard() {

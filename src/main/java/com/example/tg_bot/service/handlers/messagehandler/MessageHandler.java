@@ -16,7 +16,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import static com.example.tg_bot.utils.commands.Commands.CHECK_ALL_INFO;
-import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
 
 @Service
 @Component
@@ -37,7 +36,7 @@ public class MessageHandler {
         Commands commandNow;
 
         switch (inputMessage) {
-            case "/start" -> {
+            case "/start", "/choose_language" -> {
                 return menuHandler.handleMenu(message);
             }
             case "/buy" -> {

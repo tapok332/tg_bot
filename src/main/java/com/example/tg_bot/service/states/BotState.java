@@ -27,8 +27,8 @@ public class BotState {
 
     private SendMessage findMessageHandler(Commands currentState, Message message) {
         switch (currentState) {
-            case INFO, USER_INFO, SET_USER_INFO, UPDATE_USER_INFO,
-                    DELIVERY_INFO, SET_DELIVERY_INFO, UPDATE_DELIVERY_INFO, CHECK_USER_INFO, CHECK_ALL_INFO -> {
+            case INFO, USER_INFO, SET_USER_INFO, UPDATE_USER_INFO, DELIVERY_INFO, SET_DELIVERY_INFO,
+                    UPDATE_DELIVERY_INFO, CHECK_USER_INFO, CHECK_ALL_INFO, DELETE_USER_INFO -> {
                 return infoHandler.handleInfo(message);
             }
             case BUY, LAPTOP_ORDERS, KEYBOARD_ORDERS -> {

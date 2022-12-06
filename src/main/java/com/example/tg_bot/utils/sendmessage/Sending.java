@@ -35,8 +35,8 @@ public class Sending {
                 .build();
     }
 
-    public static EditMessageText sendPages(Long chatId,
-                                            Integer messageId, String text, List<List<InlineKeyboardButton>> buttons) {
+    public static EditMessageText sendPages(Long chatId, Integer messageId,
+                                            List<List<InlineKeyboardButton>> buttons, String text) {
         return EditMessageText.builder()
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(buttons)

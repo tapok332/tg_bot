@@ -4,9 +4,9 @@ import com.example.tg_bot.entities.User;
 import com.example.tg_bot.entities.dto.UserDto;
 import com.example.tg_bot.repo.UserRepository;
 import com.example.tg_bot.service.handlers.InfoHandler;
-import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -46,9 +46,13 @@ public class UserProcessing implements InfoHandler {
             return sendMessage(textSender.getText(userId, "send_age"), chatId);
         }
         if (usersInfoState.getAge() == null) {
-            try{
-                usersInfoState.setAge(Integer.parseInt(message.getText()));
-            }catch (NumberFormatException ex){
+            try {
+                if (Integer.parseInt(message.getText()) < 12 || Integer.parseInt(message.getText()) > 125) {
+                    return sendMessage(textSender.getText(userId, "error_age"), chatId);
+                } else {
+                    usersInfoState.setAge(Integer.parseInt(message.getText()));
+                }
+            } catch (NumberFormatException ex) {
                 return sendMessage(textSender.getText(userId, "error_age"), chatId);
             }
             userData.saveUsersInfoState(userId, userDto);
@@ -81,9 +85,13 @@ public class UserProcessing implements InfoHandler {
             return sendMessage(textSender.getText(userId, "send_age"), chatId);
         }
         if (usersInfoState.getAge() == null) {
-            try{
-                usersInfoState.setAge(Integer.parseInt(message.getText()));
-            }catch (NumberFormatException ex){
+            try {
+                if (Integer.parseInt(message.getText()) < 12 || Integer.parseInt(message.getText()) > 125) {
+                    return sendMessage(textSender.getText(userId, "error_age"), chatId);
+                } else {
+                    usersInfoState.setAge(Integer.parseInt(message.getText()));
+                }
+            } catch (NumberFormatException ex) {
                 return sendMessage(textSender.getText(userId, "error_age"), chatId);
             }
             userData.saveUsersInfoState(userId, userDto);

@@ -1,8 +1,8 @@
 package com.example.tg_bot.service.handlers.commandshandler;
 
-import com.example.tg_bot.utils.text.TextSender;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
+import com.example.tg_bot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -63,7 +63,7 @@ public class CommandsHandler {
     }
 
     private Commands getMenuOrHelp(String inputMessage, Long userId) {
-        if (inputMessage.equals(textSender.getText(userId, "menu_message"))) {
+        if (inputMessage.equals(textSender.getText(userId, "menu"))) {
             return Commands.TEXT_PROCESSING;
         }
         if (inputMessage.equals(textSender.getText(userId, "help"))) {
