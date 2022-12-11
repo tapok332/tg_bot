@@ -16,5 +16,5 @@ public class BotConfig {
     @Value("${bot.name}")
     public String name;
 
-    public final String username = "@all_in_for_you_bot";
+    public final String username = "@compshop_zks21_bot";
 }

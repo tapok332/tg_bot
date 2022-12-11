@@ -1,9 +1,3 @@
-#  Country
-#    - Region
-#    - City
-#    - Street
-#    - Post_code
-#    - Phone_number
 databaseChangeLog:
   - changeSet:
       id: 06-08-2022
