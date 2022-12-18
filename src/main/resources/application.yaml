@@ -7,7 +7,3 @@ spring:
     username: root
     password: admin
 
-bot:
-  name: Computer shop ZKS-21
-  token: 5934201310:AAFUii1hwaKzDrfoKF8Sq8EX_mROR3MVL20
-
