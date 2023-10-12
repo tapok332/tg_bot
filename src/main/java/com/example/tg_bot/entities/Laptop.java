@@ -1,9 +1,8 @@
 package com.example.tg_bot.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.stereotype.Component;
-
-import javax.persistence.*;
 
 @Entity
 @Component

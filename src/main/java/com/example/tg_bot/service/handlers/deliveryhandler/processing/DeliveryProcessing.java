@@ -8,13 +8,12 @@ import com.example.tg_bot.service.handlers.InfoHandler;
 import com.example.tg_bot.utils.cache.UserData;
 import com.example.tg_bot.utils.commands.Commands;
 import com.example.tg_bot.utils.text.TextSender;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-
-import javax.transaction.Transactional;
 
 import static com.example.tg_bot.utils.sendmessage.Sending.sendMessage;
 

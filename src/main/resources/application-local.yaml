@@ -7,5 +7,5 @@ spring:
     username: postgres
     password: admin
 bot:
-  name: Computer shop ZKS-21
-  token: ${token}
+  name: #paste your test Telegram bot name
+  token: #paste your test Telegram bot token
