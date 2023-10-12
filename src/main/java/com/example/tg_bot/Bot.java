@@ -25,8 +25,8 @@ public class Bot extends TelegramLongPollingBot {
         this.botService = botService;
 
         List<BotCommand> botCommandList = new ArrayList<>();
-        botCommandList.add(new BotCommand("/choose_language", "команда для вибору мови бота - buy goods"));
-        botCommandList.add(new BotCommand("/buy", "для придбання товару - bot language selection command"));
+        botCommandList.add(new BotCommand("/choose_language", "команда для вибору мови бота - bot language selection command"));
+        botCommandList.add(new BotCommand("/buy", "для придбання товару - buy items"));
 
         this.execute(new SetMyCommands(botCommandList, new BotCommandScopeDefault(), null));
     }
