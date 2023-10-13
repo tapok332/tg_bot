@@ -32,6 +32,8 @@ jobs:
         run: chmod +x ./gradlew
       - name: Build and Test
         run: ./gradlew build
+        env:
+          token: ${{ secrets.TOKEN }}
 
   deploy-to-aws:
     if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
