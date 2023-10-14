@@ -3,7 +3,7 @@ name: Telegram bot CI/CD
 on:
   push:
     branches:
-      - '**'
+      - 'main'
   pull_request:
     branches:
       - 'main'
@@ -67,3 +67,8 @@ jobs:
           cluster: ShopCluster
           container-name: shop
           image: ${{ steps.build-image.outputs.image }}
+      - name: Delete artifacts
+        if: always()
+        run: |
+          echo "Deleting artifacts..."
+          curl -X DELETE -H "Authorization: Bearer ${{ secrets.ACTIONS_TOKEN }}" https://api.github.com/repos/<owner>/<repo>/actions/artifacts/${{ github.run_id }}

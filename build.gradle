@@ -30,6 +30,7 @@ dependencies {
     implementation 'org.liquibase:liquibase-core:4.24.0'
     implementation 'org.postgresql:postgresql:42.6.0'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {
