@@ -1,0 +1,74 @@
+name: Telegram bot CI/CD
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Set execute permissions for Gradle Wrapper
+        run: chmod +x ./gradlew
+      - name: Build and Test
+        run: ./gradlew build
+        env:
+          token: ${{ secrets.TOKEN }}
+
+  deploy-to-aws:
+    if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Replace secrets in task-definition.json
+        run: |
+          sed -i 's/${{ secrets.TASK_DEFINITION_ARN }}/${{ secrets.TASK_DEFINITION_ARN }}/g' task-definition.json
+          sed -i 's/${{ secrets.CONTAINER_IMAGE }}/${{ secrets.CONTAINER_IMAGE }}/g' task-definition.json
+          sed -i 's/${{ secrets.EXECUTION_ROLE_ARN }}/${{ secrets.EXECUTION_ROLE_ARN }}/g' task-definition.json
+          sed -i 's/${{ secrets.REGISTERED_BY }}/${{ secrets.REGISTERED_BY }}/g' task-definition.json
+      - name: Update ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          service: ${{ secrets.ECS_SERVICE }}
+          cluster: ShopCluster
+          container-name: shop
+          image: ${{ steps.build-image.outputs.image }}
+      - name: Delete artifacts
+        if: always()
+        run: |
+          echo "Deleting artifacts..."
+          curl -X DELETE -H "Authorization: Bearer ${{ secrets.ACTIONS_TOKEN }}" https://api.github.com/repos/<owner>/<repo>/actions/artifacts/${{ github.run_id }}
