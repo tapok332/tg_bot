@@ -34,12 +34,23 @@ jobs:
         run: ./gradlew build
         env:
           token: ${{ secrets.TOKEN }}
+      - name: Upload JAR
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true))
+        uses: actions/upload-artifact@v2
+        with:
+          name: shop-jar
+          path: build/libs/*.jar
 
   deploy-to-aws:
     if: github.ref == 'refs/heads/main'
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
+      - name: Download JAR
+        uses: actions/download-artifact@v2
+        with:
+          name: shop-jar
+          path: build/libs/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
