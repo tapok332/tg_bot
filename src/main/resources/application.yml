@@ -8,4 +8,4 @@ spring:
     password: admin
 bot:
   name: Computer shop ZKS-21
-  token: ${token}
+  token: ${TOKEN}
