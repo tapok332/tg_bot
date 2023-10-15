@@ -38,7 +38,7 @@ jobs:
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true))
         uses: actions/upload-artifact@v2
         with:
-          name: shop-jar
+          name: shop
           path: build/libs/*.jar
 
   deploy-to-aws:
@@ -49,7 +49,7 @@ jobs:
       - name: Download JAR
         uses: actions/download-artifact@v2
         with:
-          name: shop-jar
+          name: shop
           path: ./
 
       - name: Checkout code
