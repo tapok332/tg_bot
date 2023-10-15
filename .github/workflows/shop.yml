@@ -83,10 +83,10 @@ jobs:
 
       - name: Replace secrets in task-definition.json
         run: |
-          sed -i 's|${{ secrets.TASK_DEFINITION_ARN }}|${{ secrets.TASK_DEFINITION_ARN }}|g' task-definition.json
-          sed -i 's|${{ secrets.CONTAINER_IMAGE }}|${{ secrets.CONTAINER_IMAGE }}|g' task-definition.json
-          sed -i 's|${{ secrets.EXECUTION_ROLE_ARN }}|${{ secrets.EXECUTION_ROLE_ARN }}|g' task-definition.json
-          sed -i 's|${{ secrets.REGISTERED_BY }}|${{ secrets.REGISTERED_BY }}|g' task-definition.json
+          sed -i 's|TASK_DEFINITION_ARN_PLACEHOLDER|${{ secrets.TASK_DEFINITION_ARN }}|g' task-definition.json
+          sed -i 's|CONTAINER_IMAGE_PLACEHOLDER|${{ secrets.CONTAINER_IMAGE }}|g' task-definition.json
+          sed -i 's|EXECUTION_ROLE_ARN_PLACEHOLDER|${{ secrets.EXECUTION_ROLE_ARN }}|g' task-definition.json
+          sed -i 's|REGISTERED_BY_PLACEHOLDER|${{ secrets.REGISTERED_BY }}|g' task-definition.json
 
       - name: Update ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
