@@ -1,5 +1,4 @@
 {
-  "taskDefinitionArn": "TASK_DEFINITION_ARN_PLACEHOLDER",
   "containerDefinitions": [
     {
       "name": "shop",
@@ -35,9 +34,7 @@
   "family": "shop",
   "executionRoleArn": "EXECUTION_ROLE_ARN_PLACEHOLDER",
   "networkMode": "awsvpc",
-  "revision": 1,
   "volumes": [],
-  "status": "ACTIVE",
   "requiresAttributes": [
     {
       "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
@@ -65,20 +62,11 @@
     }
   ],
   "placementConstraints": [],
-  "compatibilities": [
-    "EC2",
-    "FARGATE"
-  ],
-  "requiresCompatibilities": [
-    "FARGATE"
-  ],
   "cpu": "1024",
   "memory": "4096",
   "runtimePlatform": {
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
   },
-  "registeredAt": "2023-10-13T18:09:42.184Z",
-  "registeredBy": "REGISTERED_BY_PLACEHOLDER",
   "tags": []
 }
