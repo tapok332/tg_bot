@@ -1,4 +1,4 @@
-FROM adoptopenjdk:17-jdk as builder
+FROM openjdk:17-jdk as builder
 WORKDIR /shop
 COPY gradlew settings.gradle build.gradle ./
 COPY gradle gradle
