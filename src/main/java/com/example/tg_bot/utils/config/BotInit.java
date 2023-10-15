@@ -1,7 +1,7 @@
 package com.example.tg_bot.utils.config;
 
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.tg_bot.utils.exceptions.ShopException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -12,11 +12,10 @@ import org.telegram.telegrambots.meta.generics.TelegramBot;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Component
-@Getter
+@RequiredArgsConstructor
 public class BotInit {
 
-    @Autowired
-    public TelegramBot myBot;
+    public final TelegramBot myBot;
 
     @EventListener({ContextRefreshedEvent.class})
     public void init() throws TelegramApiException {
@@ -24,7 +23,7 @@ public class BotInit {
         try{
             telegramBotsApi.registerBot((LongPollingBot) myBot);
         } catch (TelegramApiException e){
-            throw new RuntimeException(e);
+            throw new ShopException(e);
         }
     }
 }
