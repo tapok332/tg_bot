@@ -50,15 +50,18 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: shop-jar
-          path: build/libs/
+          path: ./
+
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: us-east-1
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -66,6 +69,7 @@ jobs:
           mask-password: true
           registry-type: private
           skip-logout: false
+
       - name: Build and push Docker image
         id: build-image
         env:
@@ -75,12 +79,14 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
       - name: Replace secrets in task-definition.json
         run: |
-          sed -i 's/${{ secrets.TASK_DEFINITION_ARN }}/${{ secrets.TASK_DEFINITION_ARN }}/g' task-definition.json
-          sed -i 's/${{ secrets.CONTAINER_IMAGE }}/${{ secrets.CONTAINER_IMAGE }}/g' task-definition.json
-          sed -i 's/${{ secrets.EXECUTION_ROLE_ARN }}/${{ secrets.EXECUTION_ROLE_ARN }}/g' task-definition.json
-          sed -i 's/${{ secrets.REGISTERED_BY }}/${{ secrets.REGISTERED_BY }}/g' task-definition.json
+          sed -i 's|${{ secrets.TASK_DEFINITION_ARN }}|${{ secrets.TASK_DEFINITION_ARN }}|g' task-definition.json
+          sed -i 's|${{ secrets.CONTAINER_IMAGE }}|${{ secrets.CONTAINER_IMAGE }}|g' task-definition.json
+          sed -i 's|${{ secrets.EXECUTION_ROLE_ARN }}|${{ secrets.EXECUTION_ROLE_ARN }}|g' task-definition.json
+          sed -i 's|${{ secrets.REGISTERED_BY }}|${{ secrets.REGISTERED_BY }}|g' task-definition.json
+
       - name: Update ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -89,8 +95,14 @@ jobs:
           cluster: ShopCluster
           container-name: shop
           image: ${{ steps.build-image.outputs.image }}
+
+      - name: Install jq
+        if: always()
+        run: sudo apt-get install jq
+
       - name: Delete artifacts
         if: always()
         run: |
           echo "Deleting artifacts..."
-          curl -X DELETE -H "Authorization: Bearer ${{ secrets.ACTIONS_TOKEN }}" https://api.github.com/repos/<owner>/<repo>/actions/artifacts/${{ github.run_id }}
+          ARTIFACT_ID=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/<owner>/<repo>/actions/artifacts | jq '.artifacts[] | select(.name=="shop-jar") | .id')
+          curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/<owner>/<repo>/actions/artifacts/$ARTIFACT_ID
