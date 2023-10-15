@@ -29,6 +29,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.liquibase:liquibase-core:4.24.0'
     implementation 'org.postgresql:postgresql:42.6.0'
+    implementation 'software.amazon.awssdk:secretsmanager:2.21.0'
+    implementation 'org.json:json:20231013'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'com.h2database:h2'
 }

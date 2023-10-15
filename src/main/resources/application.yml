@@ -1,11 +1,7 @@
 spring:
   main:
     allow-circular-references: true
-  datasource:
-    driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/shop
-    username: postgres
-    password: admin
 bot:
   name: Computer shop ZKS-21
-  token: ${TOKEN}
+aws:
+  region: us-east-1
