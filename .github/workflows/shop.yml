@@ -77,7 +77,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build --progress=plain -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Replace secrets in task-definition.json
@@ -104,5 +104,5 @@ jobs:
         if: always()
         run: |
           echo "Deleting artifacts..."
-          ARTIFACT_ID=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/<owner>/<repo>/actions/artifacts | jq '.artifacts[] | select(.name=="shop-jar") | .id')
-          curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/<owner>/<repo>/actions/artifacts/$ARTIFACT_ID
+          ARTIFACT_ID=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/tapok332/tg_bot/actions/artifacts | jq '.artifacts[] | select(.name=="shop") | .id')
+          curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/tapok332/tg_bot/actions/artifacts/$ARTIFACT_ID
