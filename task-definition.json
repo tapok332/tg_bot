@@ -1,9 +1,9 @@
 {
-  "taskDefinitionArn": "${{ secrets.TASK_DEFINITION_ARN }}",
+  "taskDefinitionArn": "TASK_DEFINITION_ARN_PLACEHOLDER",
   "containerDefinitions": [
     {
       "name": "shop",
-      "image": "${{ secrets.CONTAINER_IMAGE }}",
+      "image": "CONTAINER_IMAGE_PLACEHOLDER",
       "cpu": 0,
       "portMappings": [
         {
@@ -33,7 +33,7 @@
     }
   ],
   "family": "shop",
-  "executionRoleArn": "${{ secrets.EXECUTION_ROLE_ARN }}",
+  "executionRoleArn": "EXECUTION_ROLE_ARN_PLACEHOLDER",
   "networkMode": "awsvpc",
   "revision": 1,
   "volumes": [],
@@ -79,6 +79,6 @@
     "operatingSystemFamily": "LINUX"
   },
   "registeredAt": "2023-10-13T18:09:42.184Z",
-  "registeredBy": "${{ secrets.REGISTERED_BY }}",
+  "registeredBy": "REGISTERED_BY_PLACEHOLDER",
   "tags": []
 }
