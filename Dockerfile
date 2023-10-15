@@ -6,7 +6,7 @@ RUN ./gradlew dependencies
 COPY src src
 RUN ./gradlew clean bootJar
 
-FROM adoptopenjdk:17-jre
+FROM openjdk:17-jre
 WORKDIR /shop
 ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0"
 COPY --from=builder /app/build/libs/*.jar shop.jar
