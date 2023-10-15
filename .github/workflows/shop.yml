@@ -36,7 +36,7 @@ jobs:
           token: ${{ secrets.TOKEN }}
 
   deploy-to-aws:
-    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
