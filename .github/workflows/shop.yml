@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: shop
-          path: build/libs/*.jar
+          path: build/libs/tg_bot-0.0.1-SNAPSHOT.jar
 
   deploy-to-aws:
     if: github.ref == 'refs/heads/main'
