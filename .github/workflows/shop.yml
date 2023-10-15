@@ -94,8 +94,6 @@ jobs:
           task-definition: task-definition.json
           service: ${{ secrets.ECS_SERVICE }}
           cluster: ShopCluster
-          container-name: shop
-          image: ${{ steps.build-image.outputs.image }}
 
       - name: Install jq
         if: always()
