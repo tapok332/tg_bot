@@ -32,6 +32,7 @@
     }
   ],
   "family": "shop",
+  "taskRoleArn": "EXECUTION_ROLE_ARN_PLACEHOLDER",
   "executionRoleArn": "EXECUTION_ROLE_ARN_PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [],
