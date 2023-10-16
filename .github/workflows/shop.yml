@@ -55,6 +55,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Find jar
+        run: |
+          echo "In general"
+          ls -la
+          echo "In build"
+          cd ./build
+          ls -la
+          echo "In build/libs"
+          cd ./libs
+          ls -la
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
