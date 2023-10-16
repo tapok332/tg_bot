@@ -1,8 +1,7 @@
 FROM openjdk:17
 WORKDIR /shop
 ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=90.0"
-COPY tg_bot-0.0.1-SNAPSHOT.jar shop.jar
-RUN ls -l
+COPY ./build/libs/tg_bot-0.0.1-SNAPSHOT.jar shop.jar
 RUN echo '#!/bin/sh' > run.sh && \
     echo 'echo "Starting shop.jar..."' >> run.sh && \
     echo 'java -jar shop.jar' >> run.sh && \
