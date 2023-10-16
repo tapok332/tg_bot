@@ -2,7 +2,8 @@ FROM openjdk:17-jdk as builder
 WORKDIR /shop
 COPY gradlew settings.gradle build.gradle ./
 COPY gradle gradle
-RUN ./gradlew dependencies
+RUN microdnf install findutils
+RUN chmod +x ./gradlew
 COPY src src
 RUN ./gradlew clean bootJar
 
