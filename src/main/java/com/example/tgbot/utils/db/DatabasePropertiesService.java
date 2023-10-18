@@ -27,8 +27,6 @@ public class DatabasePropertiesService {
         String port = jsonObject.getString("port");
         String dbname = jsonObject.getString("dbname");
 
-        log.info("jdbc:postgresql://" + host + ":" + port + "/" + dbname);
-
         var dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
         dataSource.setUrl("jdbc:postgresql://" + host + ":" + port + "/" + dbname);
