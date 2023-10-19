@@ -1,10 +1,8 @@
 package com.example.tgbot.bot;
 
 import com.example.tgbot.utils.exceptions.ShopException;
-import com.example.tgbot.utils.secrets.SecretService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -26,8 +24,8 @@ public class Bot extends TelegramLongPollingBot {
     private final BotService botService;
 
     @SneakyThrows
-    public Bot(SecretService secretService, BotService botService) {
-        super(new JSONObject(secretService.getBotToken()).getString("botToken"));
+    public Bot(TokenProvider tokenProvider, BotService botService) {
+        super(tokenProvider.getBotToken());
         this.botService = botService;
 
         List<BotCommand> botCommandList = new ArrayList<>();
@@ -37,7 +35,7 @@ public class Bot extends TelegramLongPollingBot {
         try {
             this.execute(new SetMyCommands(botCommandList, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException ex) {
-            throw new ShopException(ex.getMessage(), ex);
+            throw new ShopException("Unhappy execution of execute method", ex);
         }
     }
 

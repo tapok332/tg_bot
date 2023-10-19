@@ -2,51 +2,85 @@ package com.example.tgbot.delivery;
 
 import com.example.tgbot.user.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.springframework.stereotype.Component;
 
 @Entity
-@Component
-@Table(name = "delivery_info")
-@Builder
 @Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Delivery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long Id;
-
-    @Column(name = "country")
+    private Long id;
     private String country;
-    @NotNull
-    @Column(name = "region")
     private String region;
-    @NotNull
-    @Column(name = "city")
     private String city;
-    @NotNull
-    @Column(name = "street")
     private String street;
-    @NotNull
-    @Column(name = "post_code")
     private String postCode;
-    @NotNull
-    @Column(name = "delivery_company")
     private String deliveryCompany;
-    @NotNull
-    @Column(name = "postal_office")
     private Integer postalOffice;
-    @NotNull
-    @Column(name = "mail")
     private String mail;
-    @NotNull
-    @Column(name = "phone_number")
-    private String phoneNum;
+    private String phoneNumber;
+    @Enumerated(EnumType.STRING)
+    private DeliveryProcessingState state;
 
-    @OneToOne(mappedBy = "address")
+    @OneToOne
     private User user;
+
+    public Delivery(User user) {
+        this.user = user;
+        state = DeliveryProcessingState.START_SET;
+    }
+
+    public boolean isValid() {
+        return country != null && region != null && city != null && postCode != null
+                && deliveryCompany != null && phoneNumber != null && mail != null;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+        this.state = DeliveryProcessingState.SET_COUNTRY;
+
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+        this.state = DeliveryProcessingState.SET_REGION;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+        this.state = DeliveryProcessingState.SET_CITY;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+        this.state = DeliveryProcessingState.SET_STREET;
+    }
+
+    public void setPostCode(String postCode) {
+        this.postCode = postCode;
+        this.state = DeliveryProcessingState.SET_POSTCODE;
+    }
+
+    public void setDeliveryCompany(String deliveryCompany) {
+        this.deliveryCompany = deliveryCompany;
+        this.state = DeliveryProcessingState.SET_DELIVERY_COMPANY;
+    }
+
+    public void setPostalOffice(Integer postalOffice) {
+        this.postalOffice = postalOffice;
+        this.state = DeliveryProcessingState.SET_POSTAL_OFFICE;
+    }
+
+    public void setMail(String mail) {
+        this.mail = mail;
+        this.state = DeliveryProcessingState.SET_MAIL;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+        this.state = DeliveryProcessingState.SET_PHONE;
+    }
 }

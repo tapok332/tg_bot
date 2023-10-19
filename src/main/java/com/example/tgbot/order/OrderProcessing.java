@@ -1,9 +1,8 @@
 package com.example.tgbot.order;
 
-import com.example.tgbot.keyboard.Keyboard;
 import com.example.tgbot.keyboard.KeyboardRepository;
-import com.example.tgbot.laptop.Laptop;
 import com.example.tgbot.laptop.LaptopRepository;
+import com.example.tgbot.utils.exceptions.ShopException;
 import com.example.tgbot.utils.text.TextSender;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderProcessing {
 
+    private static final String INFO_RESPONSE_FORMAT = """
+            %s %s
+            %s %s
+            %s %s
+            %s %s
+            %s %s""";
     private final OrderPagesHandler orderPagesHandler;
     private final LaptopRepository laptopRepository;
     private final KeyboardRepository keyboardRepository;
@@ -28,24 +33,28 @@ public class OrderProcessing {
     }
 
     private String getLaptopInfo(Long userId, String productId) {
-        Laptop laptop = laptopRepository.findById(Long.valueOf(productId)).orElseThrow();
+        var laptop = laptopRepository.findById(Long.valueOf(productId))
+                .orElseThrow(() -> new ShopException("Laptop not found"));
         laptop.setQuantityInStock(laptop.getQuantityInStock() - 1);
         laptopRepository.save(laptop);
-        return textSender.getText(userId, "item_id") + laptop.getId()
-                + "\n" + textSender.getText(userId, "item_name") + laptop.getItemName()
-                + "\n" + textSender.getText(userId, "item_price") + laptop.getPrice()
-                + "\n" + textSender.getText(userId, "item_description") + laptop.getDescription()
-                + "\n" + textSender.getText(userId, "item_is_in_stock") + laptop.isInStock();
+
+        return String.format(INFO_RESPONSE_FORMAT, textSender.getText(userId, "item_id"), laptop.getId(),
+                textSender.getText(userId, "item_name"), laptop.getItemName(),
+                textSender.getText(userId, "item_price"), laptop.getPrice(),
+                textSender.getText(userId, "item_description"), laptop.getDescription(),
+                textSender.getText(userId, "item_is_in_stock"), laptop.isInStock());
     }
 
     private String getKeyboardInfo(Long userId, String productId) {
-        Keyboard keyboard = keyboardRepository.findById(Long.valueOf(productId)).orElseThrow();
+        var keyboard = keyboardRepository.findById(Long.valueOf(productId))
+                .orElseThrow(() -> new ShopException("Keyboard not found"));
         keyboard.setQuantityInStock(keyboard.getQuantityInStock() - 1);
         keyboardRepository.save(keyboard);
-        return textSender.getText(userId, "item_id") + keyboard.getId()
-                + "\n" + textSender.getText(userId, "item_name") + keyboard.getItemName()
-                + "\n" + textSender.getText(userId, "item_price") + keyboard.getPrice()
-                + "\n" + textSender.getText(userId, "item_description") + keyboard.getDescription()
-                + "\n" + textSender.getText(userId, "item_is_in_stock") + keyboard.isInStock();
+
+        return String.format(INFO_RESPONSE_FORMAT, textSender.getText(userId, "item_id"), keyboard.getId(),
+                textSender.getText(userId, "item_name"), keyboard.getItemName(),
+                textSender.getText(userId, "item_price"), keyboard.getPrice(),
+                textSender.getText(userId, "item_description"), keyboard.getDescription(),
+                textSender.getText(userId, "item_is_in_stock"), keyboard.isInStock());
     }
 }

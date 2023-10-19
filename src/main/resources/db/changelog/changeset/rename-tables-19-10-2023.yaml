@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 19-10-2023
+      author: tapok332
+      changes:
+        - renameTable:
+            oldTableName: users_info
+            newTableName: user
+        - renameTable:
+            oldTableName: delivery_info
+            newTableName: delivery

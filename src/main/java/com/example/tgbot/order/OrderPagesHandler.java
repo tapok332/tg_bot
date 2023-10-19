@@ -6,7 +6,6 @@ import com.example.tgbot.utils.text.TextSender;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.IteratorUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -24,11 +23,11 @@ import static com.example.tgbot.utils.sendmessage.Sending.sendPages;
 public class OrderPagesHandler {
 
     private List<?> items;
-    private final LaptopRepository laptopRepository;
-    private final KeyboardRepository keyboardRepository;
     @Getter
     private String category;
     private int previous;
+    private final LaptopRepository laptopRepository;
+    private final KeyboardRepository keyboardRepository;
     private final TextSender textSender;
 
     public BotApiMethod<? extends Serializable> handlePages(CallbackQuery callbackQuery) {
@@ -41,9 +40,9 @@ public class OrderPagesHandler {
         if (items == null || items.isEmpty()) {
             return sendMessage(textSender.getText(userId, "error_items"), chatId);
         }
-        try{
+        try {
             return sendPages(chatId, messageId, getCurrentButtons(callbackQueryData, userId), getCurrentItem());
-        } catch (Exception e){
+        } catch (Exception e) {
             log.info(e.getMessage());
             return sendMessage(textSender.getText(userId, "error_incorrect_command"), chatId);
         }
@@ -52,27 +51,25 @@ public class OrderPagesHandler {
     private void getItems(String callbackQueryData) {
         if (callbackQueryData.equals("laptops")) {
             category = "laptops";
-            items = IteratorUtils.toList(laptopRepository.findAll().iterator());
+            items = laptopRepository.findAll();
         }
         if (callbackQueryData.equals("keyboards")) {
             category = "keyboards";
-            items = IteratorUtils.toList(keyboardRepository.findAll().iterator());
+            items = keyboardRepository.findAll();
         }
     }
 
     public String getCurrentItem() {
-        List<String> item = items.stream()
+        return items.stream()
                 .map(Object::toString)
-                .toList();
-
-        return item.get(previous);
+                .toList()
+                .get(previous);
     }
 
     private List<List<InlineKeyboardButton>> getCurrentButtons(String callbackQueryData, Long userId) {
         int pageNumber;
         int next;
-        if (callbackQueryData.equals("page 1") || callbackQueryData.equals("laptops")
-                || callbackQueryData.equals("keyboards")) {
+        if (callbackQueryData.equals("page 1") || callbackQueryData.equals("laptops") || callbackQueryData.equals("keyboards")) {
             pageNumber = 1;
             previous = 0;
             next = 2;

@@ -28,39 +28,33 @@ public class OrderHandler {
     private final TextSender textSender;
 
     public SendMessage handleOrder(Message message) {
-        String inputMessage = message.getText();
-        Long userId = message
-                .getFrom()
-                .getId();
-        Commands commandNow = userData.getUsersCurrentBotState(userId);
+        var inputMessage = message.getText();
+        var userId = message.getFrom().getId();
 
         if (inputMessage.equals(textSender.getText(userId, "go_buy"))) {
             return sendMessageWithButton(textSender.getText(userId, "orders_info"), message.getChatId(), getOrderButtons(userId));
         }
         if (inputMessage.equals(textSender.getText(userId, "menu_message"))) {
-            commandNow = Commands.MENU;
+            return orderState.processInputMessage(Commands.MENU, message);
         }
-
-        return orderState.processInputMessage(commandNow, message);
+        return orderState.processInputMessage(userData.getUsersCurrentBotState(userId), message);
     }
 
     public SendMessage handleOrderInfo(Message message, String item) {
         if (item.contains("false")) {
             return sendMessage(textSender.getText(message.getFrom().getId(), "error_no_in_stock"), message.getChatId());
         } else {
-
             return validateUser(message, item.substring(12, 13));
         }
     }
 
     private SendMessage validateUser(Message message, String itemId) {
         Long userId = message.getFrom().getId();
-        if (!userValidate.hasUser(userId) || !userValidate.hasUserAddress(userId)) {
+        if (!userValidate.isUserValid(userId)) {
             message.setText("without info");
 
             return infoHandler.handleInfo(message);
-        }
-        if (userValidate.hasUser(userId) && userValidate.hasUserAddress(userId)) {
+        } else {
             String item = orderProcessing.getOrderInfo(message.getFrom().getId(), itemId);
             message.setText(textSender.getText(userId, "check_info"));
 
@@ -68,7 +62,6 @@ public class OrderHandler {
 
             return sendMessage(item + "\n\n" + userInfo, message.getChatId());
         }
-        return sendMessage(textSender.getText(userId, "error_validate"), message.getChatId());
     }
 
     private List<List<InlineKeyboardButton>> getOrderButtons(Long userId) {

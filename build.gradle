@@ -35,6 +35,10 @@ dependencies {
     testImplementation 'com.h2database:h2'
 }
 
+configurations {
+    all*.exclude group: 'commons-logging', module: 'commons-logging'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

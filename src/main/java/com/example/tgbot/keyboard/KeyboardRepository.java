@@ -1,8 +1,8 @@
 package com.example.tgbot.keyboard;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface KeyboardRepository extends CrudRepository<Keyboard, Long> {
+public interface KeyboardRepository extends ListCrudRepository<Keyboard, Long> {
 }

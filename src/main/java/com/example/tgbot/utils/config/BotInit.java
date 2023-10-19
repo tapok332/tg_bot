@@ -20,10 +20,10 @@ public class BotInit {
     @EventListener({ContextRefreshedEvent.class})
     public void init() throws TelegramApiException {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-        try{
+        try {
             telegramBotsApi.registerBot((LongPollingBot) myBot);
-        } catch (TelegramApiException e){
-            throw new ShopException(e);
+        } catch (TelegramApiException e) {
+            throw new ShopException("Failed init bot task");
         }
     }
 }

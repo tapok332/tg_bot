@@ -2,41 +2,56 @@ package com.example.tgbot.user;
 
 import com.example.tgbot.delivery.Delivery;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.springframework.stereotype.Component;
 
 @Entity
-@Component
-@Table(name = "users_info")
-@Builder
 @Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "\"user\"")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
     private Long id;
-    @NotNull
-    @Column(name = "user_id")
-    private Long userId;
-    @NotNull
-    @Column(name = "name")
+    private Long tgUserId;
     private String name;
-    @NotNull
-    @Column(name = "surname")
     private String surname;
-    @NotNull
-    @Column(name = "patronymic")
     private String patronymic;
-    @NotNull
-    @Column(name = "age")
     private Integer age;
+    @Enumerated(EnumType.STRING)
+    private UserProcessingState state;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    @OneToOne(cascade = CascadeType.ALL)
     private Delivery address;
+
+    public User(Long tgUserId) {
+        this.tgUserId = tgUserId;
+        this.state = UserProcessingState.START_SET;
+    }
+
+    public boolean isValid() {
+        return name != null && surname != null;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        this.state = UserProcessingState.SET_NAME;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+        this.state = UserProcessingState.SET_SURNAME;
+    }
+
+    public void setPatronymic(String patronymic) {
+        this.patronymic = patronymic;
+        this.state = UserProcessingState.SET_PATRONYMIC;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+        this.state = UserProcessingState.SET_AGE;
+    }
 }
