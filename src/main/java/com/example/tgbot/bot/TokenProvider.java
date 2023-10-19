@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TokenProvider {
 
-    @Value("${bot.token}")
+    @Value("${bot.token:}")
     private String localToken;
     private final SecretService secretService;
 
