@@ -7,6 +7,7 @@ import com.example.tgbot.order.OrderPagesHandler;
 import com.example.tgbot.utils.cache.UserData;
 import com.example.tgbot.utils.commands.CommandsHandler;
 import com.example.tgbot.utils.text.Language;
+import com.example.tgbot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jvnet.hk2.annotations.Service;
@@ -15,6 +16,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import static com.example.tgbot.utils.commands.Commands.CHECK_ALL_INFO;
+import static com.example.tgbot.utils.sendmessage.Sending.sendMessage;
 
 @Service
 @Component
@@ -28,6 +30,7 @@ public class MessageHandler {
     private final OrderHandler orderHandler;
     private final OrderPagesHandler orderPagesHandler;
     private final CommandsHandler commandsHandler;
+    private final TextSender textSender;
 
     public SendMessage handleMessage(Message message) {
         return switch (message.getText()) {
@@ -54,10 +57,15 @@ public class MessageHandler {
     }
 
     public SendMessage handleOrderMessage(Message message) {
-        String item = orderPagesHandler.getCurrentItem();
+        try {
+            String item = orderPagesHandler.getCurrentItem();
 
-        userData.saveUsersCurrentBotState(message.getFrom().getId(), CHECK_ALL_INFO);
+            userData.saveUsersCurrentBotState(message.getFrom().getId(), CHECK_ALL_INFO);
 
-        return orderHandler.handleOrderInfo(message, item);
+            return orderHandler.handleOrderInfo(message, item);
+        } catch (NullPointerException npe) {
+            log.debug("Items list is empty");
+            return sendMessage(textSender.getText(message.getFrom().getId(), "error_empty_item_list"), message.getChatId());
+        }
     }
 }

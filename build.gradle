@@ -20,19 +20,28 @@ repositories {
 }
 
 dependencies {
+    //SPRING
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.telegram:telegrambots:6.8.0'
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    //TELEGRAM
+    implementation 'org.telegram:telegrambots:6.8.0'
+    //LOMBOK
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    //DB
     implementation 'org.liquibase:liquibase-core:4.24.0'
     implementation 'org.postgresql:postgresql:42.6.0'
+    //AWS
     implementation 'software.amazon.awssdk:secretsmanager:2.21.0'
-    implementation 'org.json:json:20231013'
+    //TEST
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'com.h2database:h2'
+    //OTHER
+    implementation 'org.json:json:20231013'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.11.5'
 }
 
 configurations {
