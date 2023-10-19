@@ -4,9 +4,9 @@ import com.example.tgbot.utils.secrets.SecretService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
+@Component
 @RequiredArgsConstructor
 public class TokenProvider {
 
