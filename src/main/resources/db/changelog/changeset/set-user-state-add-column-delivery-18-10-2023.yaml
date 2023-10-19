@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 18-10-2023
+      author: tapok332
+      changes:
+        - addColumn:
+            tableName: users_info
+            columns:
+              - column:
+                  name: state
+                  type: varchar(50)
+        - addColumn:
+            tableName: delivery_info
+            columns:
+              - column:
+                  name: state
+                  type: varchar(50)
+        - addColumn:
+            tableName: delivery_info
+            columns:
+              - column:
+                  name: user_id
+                  type: bigint
+        - renameColumn:
+            tableName: users_info
+            oldColumnName: user_id
+            newColumnName: tg_user_id
+        - sql:
+            sql: ALTER TABLE users_info ALTER COLUMN name DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE users_info ALTER COLUMN surname DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE delivery_info ALTER COLUMN country DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE delivery_info ALTER COLUMN region DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE delivery_info ALTER COLUMN city DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE delivery_info ALTER COLUMN post_code DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE delivery_info ALTER COLUMN delivery_company DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE delivery_info ALTER COLUMN phone_number DROP NOT NULL;
+        - sql:
+            sql: ALTER TABLE delivery_info ALTER COLUMN mail DROP NOT NULL;
+        - addUniqueConstraint:
+            tableName: "users_info"
+            columnNames: "tg_user_id"
+            constraintName: "uq_users_info_tg_user_id"
+        - addForeignKeyConstraint:
+            baseTableName: "delivery_info"
+            baseColumnNames: "user_id"
+            referencedTableName: "users_info"
+            referencedColumnNames: "tg_user_id"
+            constraintName: "fk_delivery_info_users_info"

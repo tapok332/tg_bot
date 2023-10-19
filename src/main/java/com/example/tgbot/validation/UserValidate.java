@@ -21,15 +21,29 @@ public class UserValidate {
     private final TextSender textSender;
 
     public boolean hasUser(Long userId) {
-        return userRepository.findByUserId(userId).isPresent();
+        return userRepository.findByTgUserId(userId).isPresent();
+    }
+
+    public boolean isUserValid(Long userId) {
+        return this.hasUserWithFullInfo(userId) && hasUserAddressWithFullInfo(userId);
+    }
+
+    private boolean hasUserWithFullInfo(Long userId) {
+        var user = userRepository.findByTgUserId(userId);
+        return user.isPresent() && user.get().isValid();
     }
 
     public boolean hasUserAddress(Long userId) {
-        return userRepository.findByUserId(userId).isPresent() && userRepository.findByUserId(userId).get().getAddress() != null;
+        return userRepository.findByTgUserId(userId).isPresent() && userRepository.findByTgUserId(userId).get().getAddress() != null;
+    }
+
+    private boolean hasUserAddressWithFullInfo(Long userId) {
+        var user = userRepository.findByTgUserId(userId);
+        return user.isPresent() && user.get().getAddress() != null && user.get().getAddress().isValid();
     }
 
     public SendMessage setUserInfo(Long userId, Long chatId) {
-        log.info("Validate for set user information for user = {} by chat = {}", userId, chatId);
+        log.debug("Validate for set user information for user = {} by chat = {}", userId, chatId);
         if (this.hasUser(userId)) {
             return sendMessage(textSender.getText(userId, "error_user_already_register"), chatId);
         } else {
@@ -39,7 +53,7 @@ public class UserValidate {
     }
 
     public SendMessage setUserAddress(Long userId, Long chatId) {
-        log.info("Validate for set user address information for user = {} by chat = {}", userId, chatId);
+        log.debug("Validate for set user address information for user = {} by chat = {}", userId, chatId);
         if (this.hasUser(userId) && !this.hasUserAddress(userId)) {
             userData.saveUsersCurrentBotState(userId, Commands.SET_DELIVERY_INFO);
             return sendMessage(textSender.getText(userId, "send_country"), chatId);
@@ -49,7 +63,7 @@ public class UserValidate {
     }
 
     public SendMessage updateUserInfo(Long userId, Long chatId) {
-        log.info("Validate for update user information for user = {} by chat = {}", userId, chatId);
+        log.debug("Validate for update user information for user = {} by chat = {}", userId, chatId);
         if (this.hasUser(userId)) {
             userData.saveUsersCurrentBotState(userId, Commands.UPDATE_USER_INFO);
             return sendMessage(textSender.getText(userId, "send_name"), chatId);
@@ -59,7 +73,7 @@ public class UserValidate {
     }
 
     public SendMessage updateUserAddress(Long userId, Long chatId) {
-        log.info("Validate for set user address information for user = {} by chat = {}", userId, chatId);
+        log.debug("Validate for set user address information for user = {} by chat = {}", userId, chatId);
         if (this.hasUserAddress(userId) && this.hasUser(userId)) {
             userData.saveUsersCurrentBotState(userId, Commands.UPDATE_DELIVERY_INFO);
             return sendMessage(textSender.getText(userId, "send_country"), chatId);

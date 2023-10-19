@@ -15,8 +15,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.List;
 
-import static com.example.tgbot.utils.sendmessage.Sending.sendMessage;
-
 @Service
 @Component
 @RequiredArgsConstructor
@@ -41,14 +39,7 @@ public class UserDeliveryService implements DefaultService {
     }
 
     private SendMessage processingDeliveryInfo(Message message) {
-        if (userData.getUsersCurrentBotState(message.getFrom().getId()).equals(Commands.SET_DELIVERY_INFO)) {
-            return deliveryProcessing.saveInfo(message);
-        }
-        if (userData.getUsersCurrentBotState(message.getFrom().getId()).equals(Commands.UPDATE_DELIVERY_INFO)) {
-            deliveryProcessing.updateInfo(message);
-        }
-        return sendMessage(textSender.getText(message.getFrom().getId(), "error_unknown"),
-                message.getChatId());
+        return deliveryProcessing.saveInfo(message);
     }
 
     private List<List<InlineKeyboardButton>> getDeliveryButtons(@NonNull Long userId) {

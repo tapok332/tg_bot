@@ -7,3 +7,7 @@ databaseChangeLog:
       file: db/changelog/changeset/create-table-laptops_02-12-2022.yaml
   - include:
       file: db/changelog/changeset/create-table-keyboards_02-12-2022.yaml
+  - include:
+      file: db/changelog/changeset/set-user-state-add-column-delivery-18-10-2023.yaml
+  - include:
+      file: db/changelog/changeset/rename-tables-19-10-2023.yaml

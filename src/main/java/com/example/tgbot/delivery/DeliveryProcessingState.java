@@ -1,0 +1,6 @@
+package com.example.tgbot.delivery;
+
+enum DeliveryProcessingState {
+    SET_COUNTRY, SET_REGION, SET_CITY, SET_STREET, SET_POSTCODE,
+    SET_DELIVERY_COMPANY, SET_POSTAL_OFFICE, START_SET, SET_MAIL, SET_PHONE, PHONE
+}

@@ -16,139 +16,99 @@ import static com.example.tgbot.utils.sendmessage.Sending.sendMessage;
 @Slf4j
 @RequiredArgsConstructor
 public class UserProcessing implements BasicInfoHandler {
+
+    private static final String INFO_RESPONSE_FORMAT = """
+            %s %s
+            %s %s
+            %s %s
+            %s %s""";
     private final UserData userData;
     private final UserRepository userRepository;
-    private final UserDto userDto;
     private final TextSender textSender;
 
     @Override
     public SendMessage saveInfo(Message message) {
-        Long chatId = message.getChatId();
-        Long userId = message.getFrom().getId();
-        String username = message.getFrom().getUserName();
-        UserDto usersInfoState = userData.getUsersInfoState(userId) == null
-                ? new UserDto()
-                : userData.getUsersInfoState(userId);
+        var chatId = message.getChatId();
+        var userId = message.getFrom().getId();
+        var messageText = message.getText();
+        var user = userRepository.findByTgUserId(userId).orElseGet(() -> userRepository.save(new User(userId)));
 
-        if (usersInfoState.getName() == null) {
-            log.info("User {} with id {} execute set name in chat {}", username, userId, chatId);
-            userDto.setName(message.getText());
-            userData.saveUsersInfoState(userId, userDto);
-            return sendMessage(textSender.getText(userId, "send_surname"), chatId);
-        }
-        if (usersInfoState.getSurname() == null) {
-            log.info("User {} with id {} execute set surname in chat {}", username, userId, chatId);
-            usersInfoState.setSurname(message.getText());
-            userData.saveUsersInfoState(userId, userDto);
-            return sendMessage(textSender.getText(userId, "send_patronymic"), chatId);
-        }
-        if (usersInfoState.getPatronymic() == null) {
-            log.info("User {} with id {} execute set patronymic in chat {}", username, userId, chatId);
-            usersInfoState.setPatronymic(message.getText());
-            userData.saveUsersInfoState(userId, userDto);
-            return sendMessage(textSender.getText(userId, "send_age"), chatId);
-        }
-        if (usersInfoState.getAge() == null) {
-            try {
-                if (Integer.parseInt(message.getText()) < 12 || Integer.parseInt(message.getText()) > 125) {
-                    log.info("User {} with id {} failed execute set age in chat {}", username, userId, chatId);
-                    return sendMessage(textSender.getText(userId, "error_age"), chatId);
-                } else {
-                    log.info("User {} with id {} execute set age in chat {}", username, userId, chatId);
-                    usersInfoState.setAge(Integer.parseInt(message.getText()));
-                }
-            } catch (NumberFormatException ex) {
-                log.info("User {} with id {} failed execute set age in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_age"), chatId);
-            }
-            userData.saveUsersInfoState(userId, userDto);
-            userData.saveUsersCurrentBotState(userId, Commands.INFO);
-            buildUserAndSave(message.getFrom().getId());
-        }
-        return sendMessage(textSender.getText(userId, "thanks_user_message"), chatId);
+        return switch (user.getState()) {
+            case START_SET -> setUsername(messageText, chatId, user);
+            case SET_NAME -> setSurname(messageText, chatId, user);
+            case SET_SURNAME -> setPatronymic(messageText, chatId, user);
+            case SET_PATRONYMIC -> setAge(messageText, chatId, user);
+            default -> sendMessage(textSender.getText(user.getTgUserId(), "error_unknown"), chatId);
+        };
     }
 
     @Override
-    public SendMessage updateInfo(Message message) {
-        Long chatId = message.getChatId();
-        Long userId = message.getFrom().getId();
-        String username = message.getFrom().getUserName();
-        UserDto usersInfoState = userData.getUsersInfoState(userId) != null
-                ? userData.getUsersInfoState(userId)
-                : new UserDto();
-        if (usersInfoState.getName() == null) {
-            log.info("User {} with id {} execute update name in chat {}", username, userId, chatId);
-            userDto.setName(message.getText());
-            userData.saveUsersInfoState(userId, userDto);
-            return sendMessage(textSender.getText(userId, "send_surname"), chatId);
-        }
-        if (usersInfoState.getSurname() == null) {
-            log.info("User {} with id {} execute update surname in chat {}", username, userId, chatId);
-            usersInfoState.setSurname(message.getText());
-            userData.saveUsersInfoState(userId, userDto);
-            return sendMessage(textSender.getText(userId, "send_patronymic"), chatId);
-        }
-        if (usersInfoState.getPatronymic() == null) {
-            log.info("User {} with id {} execute update patronymic in chat {}", username, userId, chatId);
-            usersInfoState.setPatronymic(message.getText());
-            userData.saveUsersInfoState(userId, userDto);
-            return sendMessage(textSender.getText(userId, "send_age"), chatId);
-        }
-        if (usersInfoState.getAge() == null) {
-            try {
-                if (Integer.parseInt(message.getText()) < 12 || Integer.parseInt(message.getText()) > 125) {
-                    log.info("User {} with id {} failed execute update age in chat {}", username, userId, chatId);
-                    return sendMessage(textSender.getText(userId, "error_age"), chatId);
-                } else {
-                    log.info("User {} with id {} execute update age in chat {}", username, userId, chatId);
-                    usersInfoState.setAge(Integer.parseInt(message.getText()));
-                }
-            } catch (NumberFormatException ex) {
-                log.info("User {} with id {} failed execute update age in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_age"), chatId);
-            }
-            userData.saveUsersInfoState(userId, userDto);
-            userData.saveUsersCurrentBotState(userId, Commands.INFO);
-            buildUserAndUpdate(message.getFrom().getId());
-        }
-        return sendMessage(textSender.getText(userId, "thanks_message"), chatId);
-    }
-
-    @Override
-    public String checkInfo(Long userId) {
-        userData.saveUsersCurrentBotState(userId, Commands.INFO);
-        if (userRepository.findByUserId(userId).isPresent()){
-            User user = userRepository.findByUserId(userId).get();
-            return textSender.getText(userId, "name_info") + user.getName()
-                    + "\n" + textSender.getText(userId, "surname_info") + user.getSurname()
-                    + "\n" + textSender.getText(userId, "patronymic_info") + user.getPatronymic()
-                    + "\n" + textSender.getText(userId, "age_info") + user.getAge();
-        }
-        return textSender.getText(userId, "error_user_check_info");
-    }
-
-    private void buildUserAndSave(Long userId) {
-        UserDto usersInfoState = userData.getUsersInfoState(userId);
-        User newUser = User.builder()
-                .userId(userId)
-                .name(usersInfoState.getName())
-                .surname(usersInfoState.getSurname())
-                .patronymic(usersInfoState.getPatronymic())
-                .age(usersInfoState.getAge())
-                .build();
-        userRepository.save(newUser);
-    }
-
-    private void buildUserAndUpdate(Long userId) {
-        UserDto usersInfoState = userData.getUsersInfoState(userId);
-        var user = userRepository.findByUserId(userId);
+    public String checkInfo(Long tgUserId) {
+        var user = userRepository.findByTgUserId(tgUserId);
         if (user.isPresent()) {
-            User toUpdateUser = user.get();
-            toUpdateUser.setName(usersInfoState.getName());
-            toUpdateUser.setSurname(usersInfoState.getSurname());
-            toUpdateUser.setPatronymic(usersInfoState.getPatronymic());
-            toUpdateUser.setAge(usersInfoState.getAge());
-            userRepository.save(toUpdateUser);
+            return String.format(INFO_RESPONSE_FORMAT, textSender.getText(tgUserId, "name_info"), user.get().getName(),
+                    textSender.getText(tgUserId, "surname_info"), user.get().getSurname(),
+                    textSender.getText(tgUserId, "patronymic_info"), user.get().getPatronymic(),
+                    textSender.getText(tgUserId, "age_info"), user.get().getAge());
         }
+        userData.saveUsersCurrentBotState(tgUserId, Commands.INFO);
+
+        return textSender.getText(tgUserId, "error_user_check_info");
+    }
+
+    private SendMessage setUsername(String name, Long chatId, User user) {
+        var userId = user.getTgUserId();
+
+        user.setName(name);
+        log.debug("User with id {} execute set name in chat {}", userId, chatId);
+        userRepository.save(user);
+
+        return sendMessage(textSender.getText(userId, "send_surname"), chatId);
+    }
+
+    private SendMessage setSurname(String surname, Long chatId, User user) {
+        var userId = user.getTgUserId();
+
+        user.setSurname(surname);
+        log.debug("User with id {} execute set surname in chat {}", userId, chatId);
+        userRepository.save(user);
+
+        return sendMessage(textSender.getText(userId, "send_patronymic"), chatId);
+    }
+
+    private SendMessage setPatronymic(String patronymic, Long chatId, User user) {
+        var userId = user.getTgUserId();
+
+        user.setPatronymic(patronymic);
+        log.debug("User with id {} execute set patronymic in chat {}", userId, chatId);
+        userRepository.save(user);
+
+        return sendMessage(textSender.getText(userId, "send_age"), chatId);
+    }
+
+    private SendMessage setAge(String age, Long chatId, User user) {
+        var userId = user.getTgUserId();
+        if (isValidAge(age)) {
+            user.setAge(Integer.parseInt(age));
+            log.debug("User with id {} execute set age in chat {}", userId, chatId);
+            userData.saveUsersCurrentBotState(userId, Commands.INFO);
+            userRepository.save(user);
+
+            return sendMessage(textSender.getText(userId, "thanks_user_message"), chatId);
+        } else {
+            log.debug("User with id {} failed execute set age in chat {}", userId, chatId);
+            return sendMessage(textSender.getText(userId, "error_age"), chatId);
+        }
+    }
+
+    private boolean isValidAge(String message) {
+        try {
+            if (Integer.parseInt(message) < 12 || Integer.parseInt(message) > 125) {
+                return false;
+            }
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+        return true;
     }
 }

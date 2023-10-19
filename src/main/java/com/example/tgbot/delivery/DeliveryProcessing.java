@@ -4,6 +4,7 @@ import com.example.tgbot.info.BasicInfoHandler;
 import com.example.tgbot.user.UserRepository;
 import com.example.tgbot.utils.cache.UserData;
 import com.example.tgbot.utils.commands.Commands;
+import com.example.tgbot.utils.exceptions.ShopException;
 import com.example.tgbot.utils.text.TextSender;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,189 +19,58 @@ import static com.example.tgbot.utils.sendmessage.Sending.sendMessage;
 @Slf4j
 @RequiredArgsConstructor
 public class DeliveryProcessing implements BasicInfoHandler {
+
+    private static final String INFO_RESPONSE_FORMAT = """
+            %s %s
+            %s %s
+            %s %s
+            %s %s
+            %s %s
+            %s %s
+            %s %s
+            %s %s
+            %s %s""";
     private final DeliveryRepository deliveryRepository;
     private final UserRepository userRepository;
     private final UserData userData;
-    private final DeliveryDto deliveryDto;
     private final TextSender textSender;
 
     @Override
     public SendMessage saveInfo(Message message) {
         Long userId = message.getFrom().getId();
         Long chatId = message.getChatId();
-        String username = message.getFrom().getUserName();
-        DeliveryDto usersDeliveryInfoState = userData.getUsersDeliveryInfoState(userId) != null
-                ? userData.getUsersDeliveryInfoState(userId)
-                : new DeliveryDto();
-        if (usersDeliveryInfoState.getCountry() == null) {
-            log.info("User {} with id {} execute set country in chat {}", username, userId, chatId);
-            deliveryDto.setCountry(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_region"), chatId);
-        }
-        if (usersDeliveryInfoState.getRegion() == null) {
-            log.info("User {} with id {} execute set region in chat {}", username, userId, chatId);
-            deliveryDto.setRegion(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_city"), chatId);
-        }
-        if (usersDeliveryInfoState.getCity() == null) {
-            log.info("User {} with id {} execute set city in chat {}", username, userId, chatId);
-            deliveryDto.setCity(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_street"), chatId);
-        }
-        if (usersDeliveryInfoState.getStreet() == null) {
-            log.info("User {} with id {} execute set street in chat {}", username, userId, chatId);
-            deliveryDto.setStreet(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_post_code"), chatId);
-        }
-        if (usersDeliveryInfoState.getPostCode() == null) {
-            log.info("User {} with id {} execute set post code in chat {}", username, userId, chatId);
-            deliveryDto.setPostCode(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_delivery_company"), chatId);
-        }
-        if (usersDeliveryInfoState.getDeliveryCompany() == null) {
-            log.info("User {} with id {} execute set delivery company in chat {}", username, userId, chatId);
-            deliveryDto.setDeliveryCompany(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_post_office"), chatId);
-        }
-        if (usersDeliveryInfoState.getPostalOffice() == null) {
-            try {
-                deliveryDto.setPostalOffice(Integer.parseInt(message.getText()));
-            } catch (NumberFormatException ex) {
-                log.info("User {} with id {} failed execute set postal office in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_post_office"), chatId);
-            }
-            log.info("User {} with id {} execute set postal office in chat {}", username, userId, chatId);
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_mail"), chatId);
-        }
-        if (usersDeliveryInfoState.getMail() == null) {
-            if (message.getText().matches("^[\\w-]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-                deliveryDto.setMail(message.getText());
-                log.info("User {} with id {} execute set e-mail in chat {}", username, userId, chatId);
-            } else {
-                log.info("User {} with id {} failed execute set e-mail in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_mail"), chatId);
-            }
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_phone_number"), chatId);
-        }
-        if (usersDeliveryInfoState.getPhoneNum() == null) {
-            if (message.getText().matches("^[+][0-9]{3}[0-9]{9}$")) {
-                deliveryDto.setPhoneNum(message.getText());
-                log.info("User {} with id {} execute set phone number in chat {}", username, userId, chatId);
-            } else {
-                log.info("User {} with id {} failed execute set phone number in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_phone_num"), chatId);
-            }
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            buildDeliveryAndSave(userId);
-        }
-        userData.saveUsersCurrentBotState(userId, Commands.INFO);
+        var messageText = message.getText();
+        var delivery = deliveryRepository.findByUserId(userId).orElseGet(() -> getNewDelivery(userId));
 
-        return sendMessage(textSender.getText(userId, "thanks_message"), chatId);
-    }
-
-    @Override
-    public SendMessage updateInfo(Message message) {
-        Long userId = message.getFrom().getId();
-        Long chatId = message.getChatId();
-        String username = message.getFrom().getUserName();
-        DeliveryDto usersDeliveryInfoState = userData.getUsersDeliveryInfoState(userId);
-        if (usersDeliveryInfoState.getCountry() == null) {
-            log.info("User {} with id {} execute update country in chat {}", username, userId, chatId);
-            deliveryDto.setCountry(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_region"), chatId);
-        }
-        if (usersDeliveryInfoState.getRegion() == null) {
-            log.info("User {} with id {} execute update region in chat {}", username, userId, chatId);
-            deliveryDto.setRegion(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_city"), chatId);
-        }
-        if (usersDeliveryInfoState.getCity() == null) {
-            log.info("User {} with id {} execute update city in chat {}", username, userId, chatId);
-            deliveryDto.setCity(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_street"), chatId);
-        }
-        if (usersDeliveryInfoState.getStreet() == null) {
-            log.info("User {} with id {} execute update street in chat {}", username, userId, chatId);
-            deliveryDto.setStreet(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_post_code"), chatId);
-        }
-        if (usersDeliveryInfoState.getPostCode() == null) {
-            log.info("User {} with id {} execute update post code in chat {}", username, userId, chatId);
-            deliveryDto.setPostCode(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_delivery_company"), chatId);
-        }
-        if (usersDeliveryInfoState.getDeliveryCompany() == null) {
-            log.info("User {} with id {} execute update delivery company in chat {}", username, userId, chatId);
-            deliveryDto.setDeliveryCompany(message.getText());
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_post_office"), chatId);
-        }
-        if (usersDeliveryInfoState.getPostalOffice() == null) {
-            try {
-                deliveryDto.setPostalOffice(Integer.parseInt(message.getText()));
-            } catch (NumberFormatException ex) {
-                log.info("User {} with id {} failed execute update postal office in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_post_office"), chatId);
-            }
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            log.info("User {} with id {} execute update postal office in chat {}", username, userId, chatId);
-            return sendMessage(textSender.getText(userId, "send_mail"), chatId);
-        }
-        if (usersDeliveryInfoState.getMail() == null) {
-            if (message.getText().matches("^[\\w-]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-                deliveryDto.setMail(message.getText());
-                log.info("User {} with id {} execute update e-mail in chat {}", username, userId, chatId);
-            } else {
-                log.info("User {} with id {} failed execute update e-mail in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_mail"), chatId);
-            }
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            return sendMessage(textSender.getText(userId, "send_phone_number"), chatId);
-        }
-        if (usersDeliveryInfoState.getPhoneNum() == null) {
-            if (message.getText().matches("^[+][0-9]{3}[0-9]{9}$")) {
-                deliveryDto.setPhoneNum(message.getText());
-                log.info("User {} with id {} execute update phone number in chat {}", username, userId, chatId);
-            } else {
-                log.info("User {} with id {} failed execute update phone number in chat {}", username, userId, chatId);
-                return sendMessage(textSender.getText(userId, "error_phone_num"), chatId);
-            }
-            userData.saveUsersDeliveryInfoState(userId, deliveryDto);
-            buildDeliveryAndUpdate(userId);
-        }
-        userData.saveUsersCurrentBotState(userId, Commands.INFO);
-
-        return sendMessage(textSender.getText(userId, "thanks_message"), chatId);
+        return switch (delivery.getState()) {
+            case START_SET -> setCountry(messageText, userId, chatId, delivery);
+            case SET_COUNTRY -> setRegion(messageText, userId, chatId, delivery);
+            case SET_REGION -> setCity(messageText, userId, chatId, delivery);
+            case SET_CITY -> setStreet(messageText, userId, chatId, delivery);
+            case SET_STREET -> setPostCode(messageText, userId, chatId, delivery);
+            case SET_POSTCODE -> setDeliveryCompany(messageText, userId, chatId, delivery);
+            case SET_DELIVERY_COMPANY -> setPostalOffice(messageText, userId, chatId, delivery);
+            case SET_POSTAL_OFFICE -> setEmail(messageText, userId, chatId, delivery);
+            case SET_MAIL -> setPhone(messageText, userId, chatId, delivery);
+            default -> sendMessage(textSender.getText(userId, "error_unknown"), chatId);
+        };
     }
 
     @Override
     public String checkInfo(Long userId) {
-        if (userRepository.findByUserId(userId).isPresent() && userRepository.findByUserId(userId).get().getAddress() != null) {
-            Long addressId = userRepository.findByUserId(userId).get().getAddress().getId();
-            if (deliveryRepository.findById(addressId).isPresent()) {
-                Delivery address = deliveryRepository.findById(addressId).get();
-                return textSender.getText(userId, "country_info") + address.getCountry()
-                        + "\n" + textSender.getText(userId, "region_info") + address.getRegion()
-                        + "\n" + textSender.getText(userId, "city_info") + address.getCity()
-                        + "\n" + textSender.getText(userId, "street_info") + address.getStreet()
-                        + "\n" + textSender.getText(userId, "post_code_info") + address.getPostCode()
-                        + "\n" + textSender.getText(userId, "delivery_company_info") + address.getDeliveryCompany()
-                        + "\n" + textSender.getText(userId, "post_office_info") + address.getPostalOffice()
-                        + "\n" + textSender.getText(userId, "mail_info") + address.getMail()
-                        + "\n" + textSender.getText(userId, "phone_number_info") + address.getPhoneNum();
+        var user = userRepository.findByTgUserId(userId);
+        if (user.isPresent()) {
+            var delivery = deliveryRepository.findByUserId(user.get().getId());
+            if (delivery.isPresent()) {
+                return String.format(INFO_RESPONSE_FORMAT, textSender.getText(userId, "country_info"), delivery.get().getCountry(),
+                        textSender.getText(userId, "region_info"), delivery.get().getRegion(),
+                        textSender.getText(userId, "city_info"), delivery.get().getCity(),
+                        textSender.getText(userId, "street_info"), delivery.get().getStreet(),
+                        textSender.getText(userId, "post_code_info"), delivery.get().getPostCode(),
+                        textSender.getText(userId, "delivery_company_info"), delivery.get().getDeliveryCompany(),
+                        textSender.getText(userId, "post_office_info"), delivery.get().getPostalOffice(),
+                        textSender.getText(userId, "mail_info"), delivery.get().getMail(),
+                        textSender.getText(userId, "phone_number_info"), delivery.get().getPhoneNumber());
             }
         }
         userData.saveUsersCurrentBotState(userId, Commands.INFO);
@@ -208,60 +78,119 @@ public class DeliveryProcessing implements BasicInfoHandler {
         return textSender.getText(userId, "error_address_check_info");
     }
 
-    private void buildDeliveryAndSave(Long userId) {
-        DeliveryDto usersDeliveryInfoState = userData.getUsersDeliveryInfoState(userId);
-        Delivery newAddress = Delivery.builder()
-                .country(usersDeliveryInfoState.getCountry())
-                .region(usersDeliveryInfoState.getRegion())
-                .city(usersDeliveryInfoState.getCity())
-                .street(usersDeliveryInfoState.getStreet())
-                .postCode(usersDeliveryInfoState.getPostCode())
-                .deliveryCompany(usersDeliveryInfoState.getDeliveryCompany())
-                .postalOffice(usersDeliveryInfoState.getPostalOffice())
-                .mail(usersDeliveryInfoState.getMail())
-                .phoneNum(usersDeliveryInfoState.getPhoneNum())
-                .build();
-        deliveryRepository.save(newAddress);
-        userRepository.findByUserId(userId).ifPresent(user -> {
-            user.setAddress(newAddress);
-            userRepository.save(user);
-        });
-    }
-
-    private void buildDeliveryAndUpdate(Long userId) {
-        DeliveryDto usersDeliveryInfoState = userData.getUsersDeliveryInfoState(userId);
-        var user = userRepository.findByUserId(userId);
-        if (user.isPresent()) {
-            Delivery address = user.get().getAddress();
-            address.setCountry(usersDeliveryInfoState.getCountry());
-            address.setRegion(usersDeliveryInfoState.getRegion());
-            address.setCity(usersDeliveryInfoState.getCity());
-            address.setStreet(usersDeliveryInfoState.getStreet());
-            address.setPostCode(usersDeliveryInfoState.getPostCode());
-            address.setDeliveryCompany(usersDeliveryInfoState.getDeliveryCompany());
-            address.setPostalOffice(usersDeliveryInfoState.getPostalOffice());
-            address.setMail(usersDeliveryInfoState.getMail());
-            address.setPhoneNum(usersDeliveryInfoState.getPhoneNum());
-            deliveryRepository.save(address);
-            userRepository.findByUserId(userId).ifPresent(userToUpdate -> {
-                userToUpdate.setAddress(address);
-                userRepository.save(userToUpdate);
-            });
-        }
-    }
-
     @Transactional
     public SendMessage deleteAllInfo(Long userId, Long chatId) {
-        if (userRepository.findByUserId(userId).isEmpty() || userRepository.findByUserId(userId).get().getAddress() == null) {
+        var user = userRepository.findByTgUserId(userId);
+        if (user.isEmpty()) {
             return sendMessage(textSender.getText(userId, "error_user_check_info"), chatId);
         }
-        Long addressId = userRepository.findByUserId(userId).get().getAddress().getId();
 
-        deliveryRepository.deleteById(addressId);
-        userRepository.deleteByUserId(userId);
+        if (user.get().getAddress() != null) {
+            deliveryRepository.deleteById(user.get().getAddress().getId());
+        }
+        userRepository.deleteByTgUserId(userId);
         userData.saveUsersCurrentBotState(userId, Commands.INFO);
-        log.info("User with id {} was deleted", userId);
+        log.debug("User with id {} was deleted", userId);
 
         return sendMessage(textSender.getText(userId, "deleted_info"), chatId);
+    }
+
+    private SendMessage setCountry(String country, Long userId, Long chatId, Delivery delivery) {
+        delivery.setCountry(country);
+        log.debug("User with id {} execute set country in chat {}", userId, chatId);
+        deliveryRepository.save(delivery);
+
+        return sendMessage(textSender.getText(userId, "send_region"), chatId);
+    }
+
+    private SendMessage setRegion(String region, Long userId, Long chatId, Delivery delivery) {
+        delivery.setRegion(region);
+        log.debug("User with id {} execute set region in chat {}", userId, chatId);
+        deliveryRepository.save(delivery);
+
+        return sendMessage(textSender.getText(userId, "send_city"), chatId);
+    }
+
+    private SendMessage setCity(String city, Long userId, Long chatId, Delivery delivery) {
+        delivery.setCity(city);
+        log.info("User with id {} execute set city in chat {}", userId, chatId);
+        deliveryRepository.save(delivery);
+
+        return sendMessage(textSender.getText(userId, "send_street"), chatId);
+    }
+
+    private SendMessage setStreet(String street, Long userId, Long chatId, Delivery delivery) {
+        delivery.setStreet(street);
+        log.debug("User with id {} execute set street in chat {}", userId, chatId);
+        deliveryRepository.save(delivery);
+
+        return sendMessage(textSender.getText(userId, "send_post_code"), chatId);
+    }
+
+    private SendMessage setPostCode(String postcode, Long userId, Long chatId, Delivery delivery) {
+        delivery.setPostCode(postcode);
+        log.debug("User with id {} execute set post code in chat {}", userId, chatId);
+        deliveryRepository.save(delivery);
+
+        return sendMessage(textSender.getText(userId, "send_delivery_company"), chatId);
+    }
+
+    private SendMessage setDeliveryCompany(String deliveryCompany, Long userId, Long chatId, Delivery delivery) {
+        delivery.setDeliveryCompany(deliveryCompany);
+        log.debug("User with id {} execute set delivery company in chat {}", userId, chatId);
+        deliveryRepository.save(delivery);
+
+        return sendMessage(textSender.getText(userId, "send_post_office"), chatId);
+    }
+
+    private SendMessage setPostalOffice(String postalOffice, Long userId, Long chatId, Delivery delivery) {
+        try {
+            delivery.setPostalOffice(Integer.parseInt(postalOffice));
+        } catch (NumberFormatException ex) {
+            log.debug("User with id {} failed execute set postal office in chat {}", userId, chatId);
+            return sendMessage(textSender.getText(userId, "error_post_office"), chatId);
+        }
+        log.debug("User with id {} execute set postal office in chat {}", userId, chatId);
+        deliveryRepository.save(delivery);
+        return sendMessage(textSender.getText(userId, "send_mail"), chatId);
+    }
+
+    private SendMessage setEmail(String email, Long userId, Long chatId, Delivery delivery) {
+        if (isValidEmail(email)) {
+            delivery.setMail(email);
+            log.debug("User with id {} execute set e-mail in chat {}", userId, chatId);
+            deliveryRepository.save(delivery);
+
+            return sendMessage(textSender.getText(userId, "send_phone_number"), chatId);
+        } else {
+            log.debug("User with id {} failed execute set e-mail in chat {}", userId, chatId);
+            return sendMessage(textSender.getText(userId, "error_mail"), chatId);
+        }
+    }
+
+    private SendMessage setPhone(String phone, Long userId, Long chatId, Delivery delivery) {
+        if (isValidPhone(phone)) {
+            delivery.setPhoneNumber(phone);
+            log.debug("User with id {} execute set phone number in chat {}", userId, chatId);
+            userData.saveUsersCurrentBotState(userId, Commands.INFO);
+
+            return sendMessage(textSender.getText(userId, "thanks_message"), chatId);
+        } else {
+            log.debug("User with id {} failed execute set phone number in chat {}", userId, chatId);
+            return sendMessage(textSender.getText(userId, "error_phone_num"), chatId);
+        }
+    }
+
+    private static boolean isValidPhone(String phone) {
+        return phone.matches("^[+][0-9]{3}[0-9]{9}$");
+    }
+
+    private static boolean isValidEmail(String email) {
+        return email.matches("^[\\w-]+@([\\w-]+\\.)+[\\w-]{2,4}$");
+    }
+
+    private Delivery getNewDelivery(Long userId) {
+        var user = userRepository.findByTgUserId(userId).orElseThrow(() -> new ShopException("User not found"));
+        return deliveryRepository.save(new Delivery(user));
     }
 }

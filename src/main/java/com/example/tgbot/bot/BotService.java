@@ -1,7 +1,8 @@
 package com.example.tgbot.bot;
 
-import com.example.tgbot.service.handlers.CallBackHandler;
-import com.example.tgbot.service.handlers.MessageHandler;
+import com.example.tgbot.handlers.CallBackHandler;
+import com.example.tgbot.handlers.MessageHandler;
+import com.example.tgbot.utils.exceptions.ShopException;
 import com.example.tgbot.utils.text.TextSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ public class BotService {
                 return handleCallbackQuery(update.getCallbackQuery());
             }
         } catch (Exception e) {
-            log.info(e.getMessage());
+            throw new ShopException("Something was wrong", e);
         }
         if (update.getCallbackQuery() == null) {
             return SendMessage.builder()
@@ -51,8 +52,7 @@ public class BotService {
     private BotApiMethod<? extends Serializable> handleCallbackQuery(CallbackQuery callbackQuery) {
         String username = callbackQuery.getFrom().getUserName();
         Long chatId = callbackQuery.getMessage().getChatId();
-
-        log.info("New callbackQuery from User: {}, chatId: {} with data: {}", username, chatId, callbackQuery.getData());
+        log.debug("New callbackQuery from User: {}, chatId: {} with data: {}", username, chatId, callbackQuery.getData());
 
         return callBackHandler.handleCallBack(callbackQuery);
     }
@@ -60,8 +60,7 @@ public class BotService {
     private SendMessage handleMessage(Message message) {
         String username = message.getFrom().getUserName();
         Long chatId = message.getChatId();
-
-        log.info("New message from User: {}, chatId: {},  with text: {}", username, chatId, message.getText());
+        log.debug("New message from User: {}, chatId: {},  with text: {}", username, chatId, message.getText());
 
         return messageHandler.handleMessage(message);
     }

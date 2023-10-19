@@ -8,6 +8,5 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 public interface BasicInfoHandler {
 
     SendMessage saveInfo(Message message);
-    SendMessage updateInfo(Message message);
     String checkInfo(Long id);
 }

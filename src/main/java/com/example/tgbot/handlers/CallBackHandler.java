@@ -1,4 +1,4 @@
-package com.example.tgbot.service.handlers;
+package com.example.tgbot.handlers;
 
 import com.example.tgbot.order.OrderPagesHandler;
 import com.example.tgbot.utils.cache.UserData;
@@ -26,32 +26,30 @@ public class CallBackHandler {
     public BotApiMethod<? extends Serializable> handleCallBack(CallbackQuery callbackQuery) {
         Long userId = callbackQuery.getFrom().getId();
         Long chatId = callbackQuery.getMessage().getChatId();
-        BotApiMethod<? extends Serializable> replyMessage = sendMessage("Unknown request.", chatId);
         String callbackQueryData = callbackQuery.getData();
 
         if (callbackQueryData.contains("page")) {
             return orderPagesHandler.handlePages(callbackQuery);
         }
-        switch (callbackQueryData) {
-            case "set_user" -> replyMessage = userValidate.setUserInfo(userId, chatId);
-            case "set_address" -> replyMessage = userValidate.setUserAddress(userId, chatId);
-            case "update_user" -> replyMessage = userValidate.updateUserInfo(userId, chatId);
-            case "update_address" -> replyMessage = userValidate.updateUserAddress(userId, chatId);
-            case "laptops" -> replyMessage = getLaptopItems(userId, callbackQuery);
-            case "keyboards" -> replyMessage = getKeyboardsItems(userId, callbackQuery);
-        }
-
-        return replyMessage;
+        return switch (callbackQueryData) {
+            case "set_user" -> userValidate.setUserInfo(userId, chatId);
+            case "set_address" -> userValidate.setUserAddress(userId, chatId);
+            case "update_user" -> userValidate.updateUserInfo(userId, chatId);
+            case "update_address" -> userValidate.updateUserAddress(userId, chatId);
+            case "laptops" -> getLaptopItems(userId, callbackQuery);
+            case "keyboards" -> getKeyboardsItems(userId, callbackQuery);
+            default -> sendMessage("Unknown request.", chatId);
+        };
     }
 
     private BotApiMethod<? extends Serializable> getLaptopItems(Long userId, CallbackQuery callbackQuery) {
-        log.info("Laptops information for user = {}", userId);
+        log.debug("Laptops information for user = {}", userId);
         userData.saveUsersCurrentBotState(userId, Commands.LAPTOP_ORDERS);
         return orderPagesHandler.handlePages(callbackQuery);
     }
 
     private BotApiMethod<? extends Serializable> getKeyboardsItems(Long userId, CallbackQuery callbackQuery) {
-        log.info("Keyboards information for user = {}", userId);
+        log.debug("Keyboards information for user = {}", userId);
         userData.saveUsersCurrentBotState(userId, Commands.KEYBOARD_ORDERS);
         return orderPagesHandler.handlePages(callbackQuery);
     }
